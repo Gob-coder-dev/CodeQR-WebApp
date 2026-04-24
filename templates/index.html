@@ -1,30 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>QR Code Convertor</title>
+    <title>Convertisseur de lien en QR code</title>
     <meta
       name="description"
-      content="Generate a PNG QR code from text or a link, then download it directly from your browser."
+      content="Transformez un lien en QR code PNG et t&eacute;l&eacute;chargez-le directement depuis votre navigateur."
     >
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
     <main class="layout">
       <section class="hero">
-        <p class="eyebrow">Local QR Studio</p>
-        <h1>Generate a QR code, name it, and download it in one click.</h1>
+        <p class="eyebrow">Convertisseur QR</p>
+        <h1>Transformez un lien en QR code.</h1>
         <p class="lede">
-          This app runs locally on your machine. Enter text or a link, choose a file name,
-          and let the browser download the PNG.
+          Collez votre URL, nommez le fichier, puis r&eacute;cup&eacute;rez un PNG pr&ecirc;t &agrave; partager.
         </p>
-        <div class="hero-card">
-          <p class="hero-card-title">What the app does</p>
+        <div class="hero-card" aria-label="Fonctionnalit&eacute;s principales">
           <ul class="feature-list">
-            <li>Accepts free-form text or a URL</li>
-            <li>Sanitizes the output file name automatically</li>
-            <li>Generates a PNG without storing data on the server side</li>
+            <li>Lien converti en QR code PNG</li>
+            <li>Nom de fichier personnalis&eacute;</li>
+            <li>T&eacute;l&eacute;chargement direct</li>
           </ul>
         </div>
       </section>

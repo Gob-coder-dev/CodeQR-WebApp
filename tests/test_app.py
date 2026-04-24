@@ -7,7 +7,7 @@ def test_index_page_renders():
     response = client.get("/")
 
     assert response.status_code == 200
-    assert b"Local QR Studio" in response.data
+    assert b"Convertisseur QR" in response.data
 
 
 def test_qr_code_endpoint_returns_png_download():
