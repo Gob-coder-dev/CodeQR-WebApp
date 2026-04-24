@@ -45,7 +45,7 @@ def test_generate_qr_png_supports_custom_colors_and_shape():
     assert image_bytes.startswith(b"\x89PNG\r\n\x1a\n")
 
 
-def test_generate_qr_png_supports_integrated_logo():
+def test_generate_qr_png_preserves_logo_colors():
     image_bytes = generate_qr_png(
         "https://example.com",
         foreground_color="#0f766e",
@@ -57,7 +57,8 @@ def test_generate_qr_png_supports_integrated_logo():
     assert image_bytes.startswith(b"\x89PNG\r\n\x1a\n")
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     center = image.getpixel((image.width // 2, image.height // 2))
-    assert center == (15, 118, 110)
+    assert center[0] > center[1]
+    assert center[0] > center[2]
 
 
 def test_generate_qr_png_rejects_invalid_color():
