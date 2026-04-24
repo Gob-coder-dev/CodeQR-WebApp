@@ -1,13 +1,17 @@
 import io
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from app import create_app
 
 
 def build_logo_file() -> io.BytesIO:
     logo_file = io.BytesIO()
-    Image.new("RGBA", (80, 80), (15, 118, 110, 255)).save(logo_file, format="PNG")
+    logo = Image.new("RGBA", (80, 80), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(logo)
+    draw.ellipse((18, 12, 62, 56), fill=(220, 40, 40, 255))
+    draw.rectangle((36, 48, 45, 70), fill=(220, 40, 40, 255))
+    logo.save(logo_file, format="PNG")
     logo_file.seek(0)
     return logo_file
 

@@ -5,7 +5,7 @@ import re
 from typing import BinaryIO, Final
 
 import qrcode
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, ImageOps, UnidentifiedImageError
 from qrcode.constants import ERROR_CORRECT_H, ERROR_CORRECT_M
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.colormasks import SolidFillColorMask
@@ -25,6 +25,8 @@ DEFAULT_BACKGROUND_COLOR: Final[str] = "#ffffff"
 DEFAULT_MODULE_STYLE: Final[str] = "square"
 MAX_FILE_STEM_LENGTH: Final[int] = 80
 MAX_LOGO_BYTES: Final[int] = 2 * 1024 * 1024
+LOGO_CLEAR_AREA_RATIO: Final[float] = 0.28
+LOGO_ART_RATIO: Final[float] = 0.22
 INVALID_FILE_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1F]')
 WHITESPACE = re.compile(r"\s+")
 MULTIPLE_DASHES = re.compile(r"-{2,}")
@@ -128,6 +130,63 @@ def load_logo_image(logo_file: BinaryIO | None) -> Image.Image | None:
     return logo.convert("RGBA")
 
 
+def build_logo_mask(logo: Image.Image, target_size: int) -> Image.Image | None:
+    alpha = logo.getchannel("A")
+    has_transparency = alpha.getextrema()[0] < 255
+
+    if has_transparency:
+        mask = alpha
+    else:
+        grayscale = ImageOps.grayscale(logo)
+        mask = grayscale.point(lambda value: 255 if value < 245 else 0)
+
+    bbox = mask.getbbox()
+    if bbox is None:
+        return None
+
+    mask = mask.crop(bbox)
+    mask.thumbnail((target_size, target_size), Image.Resampling.LANCZOS)
+
+    canvas = Image.new("L", (target_size, target_size), 0)
+    position = (
+        (target_size - mask.width) // 2,
+        (target_size - mask.height) // 2,
+    )
+    canvas.paste(mask, position)
+    return canvas
+
+
+def paste_integrated_logo(
+    image: Image.Image,
+    logo: Image.Image,
+    foreground: tuple[int, int, int],
+    background: tuple[int, int, int],
+) -> Image.Image:
+    canvas = image.convert("RGBA")
+    width, _ = canvas.size
+    clear_size = int(width * LOGO_CLEAR_AREA_RATIO)
+    logo_size = int(width * LOGO_ART_RATIO)
+
+    left = (width - clear_size) // 2
+    top = left
+    logo_left = (width - logo_size) // 2
+    logo_top = logo_left
+
+    background_layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    background_patch = Image.new("RGBA", (clear_size, clear_size), (*background, 255))
+    background_layer.paste(background_patch, (left, top))
+    canvas = Image.alpha_composite(canvas, background_layer)
+
+    logo_mask = build_logo_mask(logo, logo_size)
+    if logo_mask is None:
+        return canvas
+
+    logo_layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    logo_patch = Image.new("RGBA", (logo_size, logo_size), (*foreground, 255))
+    logo_layer.paste(logo_patch, (logo_left, logo_top), logo_mask)
+    return Image.alpha_composite(canvas, logo_layer)
+
+
 def generate_qr_png(
     text: str,
     *,
@@ -162,10 +221,12 @@ def generate_qr_png(
             back_color=background,
             front_color=foreground,
         ),
-        embedded_image=logo,
-        embedded_image_ratio=0.24,
     )
+    output_image = image.get_image()
+
+    if logo:
+        output_image = paste_integrated_logo(output_image, logo, foreground, background)
 
     buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
+    output_image.save(buffer, format="PNG")
     return buffer.getvalue()
