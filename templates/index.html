@@ -28,39 +28,95 @@
       </section>
 
       <section class="panel">
-        <form id="qr-form" class="form" novalidate>
+        <form id="qr-form" class="form" enctype="multipart/form-data" novalidate>
           <div class="field">
-            <label for="text">Text or link</label>
+            <label for="text">Lien ou texte</label>
             <textarea
               id="text"
               name="text"
               rows="6"
-              placeholder="https://example.com or any free-form text"
+              placeholder="https://example.com ou votre texte"
               required
             ></textarea>
-            <p class="hint">The QR code will contain exactly this value.</p>
+            <p class="hint">Le QR code contiendra exactement cette valeur.</p>
           </div>
 
           <div class="field">
-            <label for="filename">File name</label>
+            <label for="filename">Nom du fichier</label>
             <input
               id="filename"
               name="filename"
               type="text"
               maxlength="80"
-              placeholder="my-qr-code"
+              placeholder="mon-qr-code"
             >
-            <p class="hint">The <code>.png</code> extension is added automatically when needed.</p>
+            <p class="hint">L'extension <code>.png</code> est ajout&eacute;e automatiquement.</p>
           </div>
 
+          <details class="advanced-options">
+            <summary>
+              <span>Options avanc&eacute;es</span>
+            </summary>
+
+            <div class="advanced-content">
+              <div class="option-grid">
+                <div class="field color-field">
+                  <label for="foreground-color">Couleur du QR code</label>
+                  <input
+                    id="foreground-color"
+                    name="foreground_color"
+                    type="color"
+                    value="#102033"
+                  >
+                </div>
+
+                <div class="field color-field">
+                  <label for="background-color">Couleur du fond</label>
+                  <input
+                    id="background-color"
+                    name="background_color"
+                    type="color"
+                    value="#ffffff"
+                  >
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="module-style">Forme des modules</label>
+                <select id="module-style" name="module_style">
+                  <option value="square">Classique</option>
+                  <option value="rounded">Arrondi</option>
+                  <option value="circle">Points</option>
+                  <option value="gapped">Espac&eacute;</option>
+                  <option value="vertical">Barres verticales</option>
+                  <option value="horizontal">Barres horizontales</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="logo">Logo central</label>
+                <input
+                  id="logo"
+                  name="logo"
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                >
+                <p class="hint">PNG, JPG ou WebP, 2 Mo maximum.</p>
+              </div>
+
+              <button id="reset-options" class="secondary-button" type="button">
+                R&eacute;initialiser les options
+              </button>
+            </div>
+          </details>
+
           <button id="submit-button" class="button" type="submit">
-            Generate and download
+            G&eacute;n&eacute;rer et t&eacute;l&eacute;charger
           </button>
         </form>
 
         <div id="status" class="status" aria-live="polite">
-          The file will be downloaded to the browser's default download folder, or through the
-          "Save As" dialog if that option is enabled.
+          Le fichier sera t&eacute;l&eacute;charg&eacute; dans le dossier par d&eacute;faut du navigateur.
         </div>
       </section>
     </main>

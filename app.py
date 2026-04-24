@@ -11,8 +11,11 @@ from bootstrap import ensure_project_interpreter
 ensure_project_interpreter()
 
 from flask import Flask, jsonify, render_template, request, send_file
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from qr_service import QRCodeRequestError, build_download_name, generate_qr_png
+
+MAX_REQUEST_BYTES = 3 * 1024 * 1024
 
 
 def get_runtime_root() -> Path:
@@ -29,6 +32,7 @@ def create_app() -> Flask:
         template_folder=str(runtime_root / "templates"),
         static_folder=str(runtime_root / "static"),
     )
+    app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BYTES
 
     @app.get("/")
     def index() -> str:
@@ -38,15 +42,33 @@ def create_app() -> Flask:
     def health():
         return jsonify({"status": "ok"}), HTTPStatus.OK
 
+    @app.errorhandler(RequestEntityTooLarge)
+    def request_entity_too_large(_error):
+        return (
+            jsonify({"error": "Logo image must be 2 MB or smaller."}),
+            HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
+        )
+
     @app.post("/api/qr-code")
     def create_qr_code():
-        payload = request.get_json(silent=True) or request.form or {}
+        payload = request.get_json(silent=True) if request.is_json else None
+        if payload is None:
+            payload = request.form or {}
+
         text = payload.get("text", "")
         filename = payload.get("filename", "")
+        logo_upload = request.files.get("logo")
+        logo_file = logo_upload.stream if logo_upload and logo_upload.filename else None
 
         try:
             download_name = build_download_name(filename)
-            image_bytes = generate_qr_png(text)
+            image_bytes = generate_qr_png(
+                text,
+                foreground_color=payload.get("foreground_color", ""),
+                background_color=payload.get("background_color", ""),
+                module_style=payload.get("module_style", ""),
+                logo_file=logo_file,
+            )
         except QRCodeRequestError as error:
             return jsonify({"error": str(error)}), HTTPStatus.BAD_REQUEST
 

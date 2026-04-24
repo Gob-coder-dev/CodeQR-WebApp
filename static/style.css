@@ -111,7 +111,8 @@ label {
 }
 
 textarea,
-input {
+input,
+select {
   width: 100%;
   padding: 14px 16px;
   border: 1px solid rgba(18, 32, 51, 0.12);
@@ -128,17 +129,102 @@ textarea {
 }
 
 textarea:focus,
-input:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: rgba(15, 118, 110, 0.55);
   box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.14);
   transform: translateY(-1px);
 }
 
+select {
+  cursor: pointer;
+}
+
+input[type="color"] {
+  min-height: 52px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+input[type="file"] {
+  padding: 12px 14px;
+}
+
 .hint {
   margin: 0;
   color: var(--muted);
   font-size: 0.94rem;
+}
+
+.advanced-options {
+  border: 1px solid rgba(18, 32, 51, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.52);
+  overflow: hidden;
+}
+
+.advanced-options summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.advanced-options summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-options summary::after {
+  content: "+";
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--primary);
+  background: rgba(15, 118, 110, 0.1);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.advanced-options[open] summary::after {
+  content: "-";
+}
+
+.advanced-content {
+  padding: 0 16px 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.secondary-button {
+  justify-self: start;
+  appearance: none;
+  border: 1px solid rgba(18, 32, 51, 0.14);
+  border-radius: 999px;
+  padding: 11px 16px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.secondary-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(18, 32, 51, 0.1);
 }
 
 .button {
@@ -201,5 +287,9 @@ code {
   .hero,
   .panel {
     padding: 24px;
+  }
+
+  .option-grid {
+    grid-template-columns: 1fr;
   }
 }

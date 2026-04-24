@@ -3,6 +3,18 @@ const submitButton = document.querySelector("#submit-button");
 const statusBox = document.querySelector("#status");
 const textField = document.querySelector("#text");
 const filenameField = document.querySelector("#filename");
+const foregroundColorField = document.querySelector("#foreground-color");
+const backgroundColorField = document.querySelector("#background-color");
+const moduleStyleField = document.querySelector("#module-style");
+const logoField = document.querySelector("#logo");
+const resetOptionsButton = document.querySelector("#reset-options");
+
+const defaultOptions = {
+  foregroundColor: "#102033",
+  backgroundColor: "#ffffff",
+  moduleStyle: "square",
+};
+const maxLogoBytes = 2 * 1024 * 1024;
 
 function setStatus(message, type = "info") {
   statusBox.textContent = message;
@@ -50,28 +62,40 @@ async function handleSubmit(event) {
 
   const text = textField.value.trim();
   const filename = filenameField.value.trim();
+  const logoFile = logoField.files[0];
 
   if (!text) {
-    setStatus("Enter text or a link first.", "error");
+    setStatus("Ajoutez un lien ou un texte d'abord.", "error");
     textField.focus();
     return;
   }
 
+  if (logoFile && logoFile.size > maxLogoBytes) {
+    setStatus("Le logo doit faire 2 Mo maximum.", "error");
+    logoField.focus();
+    return;
+  }
+
   submitButton.disabled = true;
-  setStatus("Generating the QR code...", "loading");
+  setStatus("Generation du QR code...", "loading");
 
   try {
+    const formData = new FormData(form);
+    formData.set("text", text);
+    formData.set("filename", filename);
+
+    if (!logoFile) {
+      formData.delete("logo");
+    }
+
     const response = await fetch("/api/qr-code", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text, filename }),
+      body: formData,
     });
 
     if (!response.ok) {
       const errorPayload = await response.json().catch(() => null);
-      const errorMessage = errorPayload?.error || "The QR code generation failed.";
+      const errorMessage = errorPayload?.error || "Le QR code n'a pas pu etre genere.";
       throw new Error(errorMessage);
     }
 
@@ -80,18 +104,30 @@ async function handleSubmit(event) {
     const downloadName = extractFilename(contentDisposition) || fallbackName(filename);
 
     triggerDownload(blob, downloadName);
-    setStatus(`Download started for ${downloadName}.`, "success");
+    setStatus(`Telechargement lance pour ${downloadName}.`, "success");
   } catch (error) {
-    setStatus(error.message || "An unexpected error occurred.", "error");
+    setStatus(error.message || "Une erreur inattendue est survenue.", "error");
   } finally {
     submitButton.disabled = false;
   }
 }
 
+function resetAdvancedOptions() {
+  foregroundColorField.value = defaultOptions.foregroundColor;
+  backgroundColorField.value = defaultOptions.backgroundColor;
+  moduleStyleField.value = defaultOptions.moduleStyle;
+  logoField.value = "";
+  setStatus("Options avancees reinitialisees.", "info");
+}
+
 form.addEventListener("submit", handleSubmit);
 
-textField.addEventListener("input", () => {
+function clearErrorStatus() {
   if (statusBox.dataset.state === "error") {
-    setStatus("Ready to generate a new QR code.", "info");
+    setStatus("Pret a generer un nouveau QR code.", "info");
   }
-});
+}
+
+form.addEventListener("input", clearErrorStatus);
+form.addEventListener("change", clearErrorStatus);
+resetOptionsButton.addEventListener("click", resetAdvancedOptions);
