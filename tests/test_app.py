@@ -37,3 +37,12 @@ def test_qr_code_endpoint_rejects_empty_text():
     assert response.json == {
         "error": "Please enter a text or a link before generating a QR code."
     }
+
+
+def test_health_endpoint_returns_ok():
+    client = create_app().test_client()
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json == {"status": "ok"}

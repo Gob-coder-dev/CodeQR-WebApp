@@ -1,8 +1,8 @@
 # QR Code Converter
 
-A small local web app that generates a PNG QR code from text or a link.
+A small Flask web app that generates a PNG QR code from text or a link.
 
-The app runs on your computer with Flask. The user enters a value, chooses a file name, and the browser downloads the generated image.
+The app does not store user data. It renders a web page, accepts text input, generates a QR code on the server, and sends the PNG back as a browser download.
 
 ## Features
 
@@ -10,24 +10,25 @@ The app runs on your computer with Flask. The user enters a value, chooses a fil
 - generates the QR code with Python
 - downloads the PNG directly from the browser
 - sanitizes the output file name automatically
-- simple responsive interface that works on Windows and macOS
-- one-click Windows launcher for local use
+- ready for local development, Docker, and Render
 
 ## Tech Stack
 
 - Python 3
-- Flask for the local web server
+- Flask for the web app
 - `qrcode` + Pillow to generate the PNG image
-- HTML, CSS, and JavaScript for the interface
+- Waitress for production serving
+- Docker for deployment packaging
 
 ## Project Structure
 
 ```text
 .
 |-- app.py
-|-- launcher.py
-|-- launch_qr_code_converter.bat
-|-- build_windows.bat
+|-- bootstrap.py
+|-- Dockerfile
+|-- render.yaml
+|-- serve.py
 |-- qr_service.py
 |-- requirements.txt
 |-- requirements-dev.txt
@@ -41,7 +42,7 @@ The app runs on your computer with Flask. The user enters a value, chooses a fil
     `-- test_qr_service.py
 ```
 
-## Installation
+## Local Installation
 
 ### Windows PowerShell
 
@@ -61,61 +62,70 @@ python -m pip install --upgrade pip
 pip install -r requirements-dev.txt
 ```
 
-## Run the App
+## Local Run
 
-Preferred local launcher:
+For a production-like local run:
 
 ```powershell
-python launcher.py
+python serve.py
 ```
 
-Development server:
+For the Flask development server:
 
 ```powershell
 python app.py
 ```
 
-Then open your browser at:
+Then open:
+
+```text
+http://127.0.0.1:10000
+```
+
+If you run `app.py`, the default local URL is:
 
 ```text
 http://127.0.0.1:5000
 ```
 
-If a local `.venv` exists, `app.py` and `launcher.py` automatically reuse it even when they are started from another Python interpreter.
+If a local `.venv` exists, `app.py` and `serve.py` automatically reuse it even when they are started from another Python interpreter.
 
-## One-Click Local Launch on Windows
+## Docker
 
-If the project dependencies are already installed, you can start the app by double-clicking:
+Build the image:
 
-```text
-launch_qr_code_converter.bat
+```powershell
+docker build -t qr-code-converter .
 ```
 
-This starts the local server and opens the browser automatically.
+Run the container:
 
-## Windows App for Non-Technical Users
-
-If you want other people to launch the project without using Python, PowerShell, or a terminal, build the packaged Windows app.
-
-Double-click:
-
-```text
-build_windows.bat
+```powershell
+docker run --rm -p 10000:10000 -e PORT=10000 qr-code-converter
 ```
 
-The packaged app will be created in:
+Open:
 
 ```text
-dist/QR Code Converter/
+http://127.0.0.1:10000
 ```
 
-Share that full folder with end users. They only need to double-click:
+## Deploy on Render
 
-```text
-QR Code Converter.exe
-```
+This repository now includes:
 
-No Python installation is required on their machine.
+- a `Dockerfile`
+- a `render.yaml`
+- a `/health` endpoint for Render health checks
+
+### Recommended setup
+
+1. Push this repository to GitHub.
+2. In Render, create a new Blueprint or Web Service from the repository.
+3. Let Render build from the included `Dockerfile`.
+4. Use `/health` as the health check path.
+
+If you use the included `render.yaml`, Render can read the service definition directly from the repo root.
 
 ## Usage
 
@@ -126,7 +136,7 @@ No Python installation is required on their machine.
 
 ## Where Is the File Saved?
 
-Because this is a local web app, the browser controls where the file is saved:
+Because this is a web app, the browser controls where the file is saved:
 
 - either the file goes to the default download folder
 - or the browser opens a `Save As` dialog, depending on its settings
@@ -136,10 +146,3 @@ Because this is a local web app, the browser controls where the file is saved:
 ```powershell
 pytest
 ```
-
-## Possible Next Steps
-
-- add a QR code preview before download
-- allow color customization
-- allow image size configuration
-- build a macOS `.app` version on a Mac

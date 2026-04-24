@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: qr-code-converter
+    runtime: docker
+    plan: free
+    autoDeployTrigger: commit
+    healthCheckPath: /health

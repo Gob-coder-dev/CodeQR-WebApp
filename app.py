@@ -34,6 +34,10 @@ def create_app() -> Flask:
     def index() -> str:
         return render_template("index.html")
 
+    @app.get("/health")
+    def health():
+        return jsonify({"status": "ok"}), HTTPStatus.OK
+
     @app.post("/api/qr-code")
     def create_qr_code():
         payload = request.get_json(silent=True) or request.form or {}
