@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>QR Code Convertor</title>
+    <meta
+      name="description"
+      content="Generate a PNG QR code from text or a link, then download it directly from your browser."
+    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <main class="layout">
+      <section class="hero">
+        <p class="eyebrow">Local QR Studio</p>
+        <h1>Generate a QR code, name it, and download it in one click.</h1>
+        <p class="lede">
+          This app runs locally on your machine. Enter text or a link, choose a file name,
+          and let the browser download the PNG.
+        </p>
+        <div class="hero-card">
+          <p class="hero-card-title">What the app does</p>
+          <ul class="feature-list">
+            <li>Accepts free-form text or a URL</li>
+            <li>Sanitizes the output file name automatically</li>
+            <li>Generates a PNG without storing data on the server side</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel">
+        <form id="qr-form" class="form" novalidate>
+          <div class="field">
+            <label for="text">Text or link</label>
+            <textarea
+              id="text"
+              name="text"
+              rows="6"
+              placeholder="https://example.com or any free-form text"
+              required
+            ></textarea>
+            <p class="hint">The QR code will contain exactly this value.</p>
+          </div>
+
+          <div class="field">
+            <label for="filename">File name</label>
+            <input
+              id="filename"
+              name="filename"
+              type="text"
+              maxlength="80"
+              placeholder="my-qr-code"
+            >
+            <p class="hint">The <code>.png</code> extension is added automatically when needed.</p>
+          </div>
+
+          <button id="submit-button" class="button" type="submit">
+            Generate and download
+          </button>
+        </form>
+
+        <div id="status" class="status" aria-live="polite">
+          The file will be downloaded to the browser's default download folder, or through the
+          "Save As" dialog if that option is enabled.
+        </div>
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  </body>
+</html>
