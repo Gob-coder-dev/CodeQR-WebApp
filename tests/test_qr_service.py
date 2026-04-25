@@ -3,7 +3,21 @@ import io
 import pytest
 from PIL import Image, ImageDraw
 
-from qr_service import QRCodeRequestError, build_download_name, generate_qr_png
+from qr_service import (
+    QRCodeRequestError,
+    build_download_name,
+    clear_intersecting_modules,
+    generate_qr_png,
+)
+
+
+class FakeQRCode:
+    box_size = 10
+    border = 0
+    modules = [
+        [True, True],
+        [True, True],
+    ]
 
 
 def build_logo_file() -> io.BytesIO:
@@ -59,6 +73,21 @@ def test_generate_qr_png_preserves_logo_colors():
     center = image.getpixel((image.width // 2, image.height // 2))
     assert center[0] > center[1]
     assert center[0] > center[2]
+
+
+def test_clear_intersecting_modules_clears_whole_module():
+    image = Image.new("RGBA", (20, 20), (15, 118, 110, 255))
+
+    clear_intersecting_modules(
+        image,
+        FakeQRCode(),
+        (5, 5, 6, 6),
+        (255, 255, 255),
+    )
+
+    assert image.getpixel((0, 0)) == (255, 255, 255, 255)
+    assert image.getpixel((9, 9)) == (255, 255, 255, 255)
+    assert image.getpixel((10, 0)) == (15, 118, 110, 255)
 
 
 def test_generate_qr_png_rejects_invalid_color():
