@@ -8,7 +8,12 @@ from typing import BinaryIO, Final
 
 import qrcode
 from PIL import Image, UnidentifiedImageError
-from qrcode.constants import ERROR_CORRECT_H, ERROR_CORRECT_M
+from qrcode.constants import (
+    ERROR_CORRECT_H,
+    ERROR_CORRECT_L,
+    ERROR_CORRECT_M,
+    ERROR_CORRECT_Q,
+)
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.colormasks import (
     HorizontalGradiantColorMask,
@@ -34,6 +39,8 @@ DEFAULT_BACKGROUND_COLOR: Final[str] = "#ffffff"
 DEFAULT_MODULE_STYLE: Final[str] = "square"
 DEFAULT_EYE_STYLE: Final[str] = "square"
 DEFAULT_QUALITY: Final[str] = "high"
+DEFAULT_ERROR_CORRECTION: Final[str] = "medium"
+DEFAULT_BORDER_SIZE: Final[str] = "standard"
 DEFAULT_COLOR_MODE: Final[str] = "solid"
 DEFAULT_OUTPUT_FORMAT: Final[str] = "png"
 DEFAULT_LOGO_SIZE_RATIO: Final[float] = 0.22
@@ -66,6 +73,19 @@ QUALITY_BOX_SIZES = {
     "medium": 16,
     "high": 24,
     "very_high": 30,
+}
+
+ERROR_CORRECTION_LEVELS = {
+    "low": ERROR_CORRECT_L,
+    "medium": ERROR_CORRECT_M,
+    "quartile": ERROR_CORRECT_Q,
+    "high": ERROR_CORRECT_H,
+}
+
+BORDER_SIZES = {
+    "small": 2,
+    "standard": 4,
+    "large": 6,
 }
 
 COLOR_MODES = {"solid", "horizontal", "vertical", "radial", "square"}
@@ -225,6 +245,37 @@ def resolve_box_size(quality: str) -> int:
         raise QRCodeRequestError("Selected QR code quality is not supported.")
 
     return box_size
+
+
+def resolve_error_correction(error_correction: str, has_logo: bool = False) -> int:
+    value = (
+        DEFAULT_ERROR_CORRECTION
+        if error_correction is None
+        else str(error_correction).strip().lower()
+    )
+    if not value:
+        value = "high" if has_logo else DEFAULT_ERROR_CORRECTION
+
+    level = ERROR_CORRECTION_LEVELS.get(value)
+    if level is None:
+        raise QRCodeRequestError("Selected error correction level is not supported.")
+
+    if has_logo:
+        return ERROR_CORRECT_H
+
+    return level
+
+
+def resolve_border_size(border_size: str) -> int:
+    value = DEFAULT_BORDER_SIZE if border_size is None else str(border_size).strip().lower()
+    if not value:
+        value = DEFAULT_BORDER_SIZE
+
+    border = BORDER_SIZES.get(value)
+    if border is None:
+        raise QRCodeRequestError("Selected QR code margin is not supported.")
+
+    return border
 
 
 def resolve_output_format(output_format: str) -> str:
@@ -483,6 +534,8 @@ def generate_qr_svg(
     module_style: str = DEFAULT_MODULE_STYLE,
     eye_style: str = DEFAULT_EYE_STYLE,
     quality: str = DEFAULT_QUALITY,
+    error_correction: str = DEFAULT_ERROR_CORRECTION,
+    border_size: str = DEFAULT_BORDER_SIZE,
     color_mode: str = DEFAULT_COLOR_MODE,
     transparent_background: bool | str = False,
     logo_size: str | float | int | None = DEFAULT_LOGO_SIZE_RATIO,
@@ -509,13 +562,15 @@ def generate_qr_svg(
     box_size = resolve_box_size(quality)
     logo_size_ratio = resolve_logo_size_ratio(logo_size)
     logo = load_logo_image(logo_file)
+    correction_level = resolve_error_correction(error_correction, has_logo=logo is not None)
+    border = resolve_border_size(border_size)
     prepared_logo = None
 
     qr_code = qrcode.QRCode(
         version=None,
-        error_correction=ERROR_CORRECT_H if logo else ERROR_CORRECT_M,
+        error_correction=correction_level,
         box_size=box_size,
-        border=4,
+        border=border,
     )
     qr_code.add_data(value)
     qr_code.make(fit=True)
@@ -575,6 +630,8 @@ def generate_qr_png(
     module_style: str = DEFAULT_MODULE_STYLE,
     eye_style: str = DEFAULT_EYE_STYLE,
     quality: str = DEFAULT_QUALITY,
+    error_correction: str = DEFAULT_ERROR_CORRECTION,
+    border_size: str = DEFAULT_BORDER_SIZE,
     color_mode: str = DEFAULT_COLOR_MODE,
     transparent_background: bool | str = False,
     logo_size: str | float | int | None = DEFAULT_LOGO_SIZE_RATIO,
@@ -600,12 +657,14 @@ def generate_qr_png(
     box_size = resolve_box_size(quality)
     logo_size_ratio = resolve_logo_size_ratio(logo_size)
     logo = load_logo_image(logo_file)
+    correction_level = resolve_error_correction(error_correction, has_logo=logo is not None)
+    border = resolve_border_size(border_size)
     prepared_logo = None
     qr_code = qrcode.QRCode(
         version=None,
-        error_correction=ERROR_CORRECT_H if logo else ERROR_CORRECT_M,
+        error_correction=correction_level,
         box_size=box_size,
-        border=4,
+        border=border,
     )
     qr_code.add_data(value)
     qr_code.make(fit=True)
@@ -650,6 +709,8 @@ def generate_qr_file(
     module_style: str = DEFAULT_MODULE_STYLE,
     eye_style: str = DEFAULT_EYE_STYLE,
     quality: str = DEFAULT_QUALITY,
+    error_correction: str = DEFAULT_ERROR_CORRECTION,
+    border_size: str = DEFAULT_BORDER_SIZE,
     color_mode: str = DEFAULT_COLOR_MODE,
     transparent_background: bool | str = False,
     logo_size: str | float | int | None = DEFAULT_LOGO_SIZE_RATIO,
@@ -665,6 +726,8 @@ def generate_qr_file(
         module_style=module_style,
         eye_style=eye_style,
         quality=quality,
+        error_correction=error_correction,
+        border_size=border_size,
         color_mode=color_mode,
         transparent_background=transparent_background,
         logo_size=logo_size,

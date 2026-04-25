@@ -68,6 +68,20 @@ def test_generate_qr_png_supports_medium_quality():
     assert image.size == (528, 528)
 
 
+def test_generate_qr_png_supports_small_margin():
+    image_bytes = generate_qr_png("https://example.com", quality="medium", border_size="small")
+    image = Image.open(io.BytesIO(image_bytes))
+
+    assert image.size == (464, 464)
+
+
+def test_generate_qr_png_supports_large_margin():
+    image_bytes = generate_qr_png("https://example.com", quality="medium", border_size="large")
+    image = Image.open(io.BytesIO(image_bytes))
+
+    assert image.size == (592, 592)
+
+
 def test_generate_qr_png_supports_high_quality_by_default():
     image_bytes = generate_qr_png("https://example.com")
     image = Image.open(io.BytesIO(image_bytes))
@@ -100,6 +114,15 @@ def test_generate_qr_png_supports_gradients():
         foreground_color_2="#0f766e",
         background_color="#ffffff",
         color_mode="horizontal",
+    )
+
+    assert image_bytes.startswith(b"\x89PNG\r\n\x1a\n")
+
+
+def test_generate_qr_png_supports_error_correction_level():
+    image_bytes = generate_qr_png(
+        "https://example.com",
+        error_correction="high",
     )
 
     assert image_bytes.startswith(b"\x89PNG\r\n\x1a\n")
@@ -210,6 +233,16 @@ def test_generate_qr_png_rejects_invalid_logo_size():
 def test_generate_qr_png_rejects_unknown_quality():
     with pytest.raises(QRCodeRequestError):
         generate_qr_png("https://example.com", quality="ultra")
+
+
+def test_generate_qr_png_rejects_unknown_error_correction():
+    with pytest.raises(QRCodeRequestError):
+        generate_qr_png("https://example.com", error_correction="extreme")
+
+
+def test_generate_qr_png_rejects_unknown_margin():
+    with pytest.raises(QRCodeRequestError):
+        generate_qr_png("https://example.com", border_size="giant")
 
 
 def test_generate_qr_png_rejects_blank_text():

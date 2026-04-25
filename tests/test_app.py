@@ -28,10 +28,14 @@ def test_index_page_renders():
     assert b"foreground-color-hex" in response.data
     assert b"background-color-hex" in response.data
     assert b"preview-image" in response.data
+    assert b"qr-type" in response.data
+    assert b"qr-fields-wifi" in response.data
     assert b"output-format" in response.data
     assert b"eye-style" in response.data
     assert b"transparent-background" in response.data
     assert b"logo-size" in response.data
+    assert b"error-correction" in response.data
+    assert b"border-size" in response.data
 
 
 def test_qr_code_endpoint_returns_png_download():
@@ -61,6 +65,8 @@ def test_qr_code_endpoint_accepts_advanced_form_options():
             "background_color": "#ffffff",
             "module_style": "rounded",
             "quality": "very_high",
+            "error_correction": "quartile",
+            "border_size": "standard",
         },
     )
 
@@ -69,6 +75,26 @@ def test_qr_code_endpoint_accepts_advanced_form_options():
     assert response.data.startswith(b"\x89PNG\r\n\x1a\n")
     assert Image.open(io.BytesIO(response.data)).size == (990, 990)
     assert "custom.png" in response.headers["Content-Disposition"]
+
+
+def test_qr_code_endpoint_accepts_wifi_type():
+    client = create_app().test_client()
+
+    response = client.post(
+        "/api/qr-code",
+        data={
+            "qr_type": "wifi",
+            "wifi_ssid": "Demo Wi-Fi",
+            "wifi_security": "WPA",
+            "wifi_password": "secret",
+            "filename": "wifi",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.mimetype == "image/png"
+    assert response.data.startswith(b"\x89PNG\r\n\x1a\n")
+    assert "wifi.png" in response.headers["Content-Disposition"]
 
 
 def test_qr_code_endpoint_accepts_logo_upload():
@@ -149,6 +175,41 @@ def test_qr_code_endpoint_rejects_invalid_quality():
     assert response.status_code == 400
     assert response.json == {
         "error": "Selected QR code quality is not supported."
+    }
+
+
+def test_qr_code_endpoint_rejects_invalid_type():
+    client = create_app().test_client()
+
+    response = client.post(
+        "/api/qr-code",
+        data={
+            "qr_type": "calendar",
+            "filename": "custom",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json == {
+        "error": "Selected QR code type is not supported."
+    }
+
+
+def test_qr_code_endpoint_rejects_invalid_error_correction():
+    client = create_app().test_client()
+
+    response = client.post(
+        "/api/qr-code",
+        data={
+            "text": "https://example.com",
+            "filename": "custom",
+            "error_correction": "extreme",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json == {
+        "error": "Selected error correction level is not supported."
     }
 
 

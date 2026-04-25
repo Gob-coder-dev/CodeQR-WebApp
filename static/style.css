@@ -112,6 +112,29 @@ h1 {
   gap: 8px;
 }
 
+.content-section {
+  min-width: 0;
+  margin: 0;
+  padding: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.48);
+  display: grid;
+  gap: 16px;
+}
+
+.content-section legend {
+  padding: 0 8px;
+  color: var(--primary-dark);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.qr-type-fields {
+  display: grid;
+  gap: 14px;
+}
+
 label {
   font-weight: 700;
 }

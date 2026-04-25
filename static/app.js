@@ -1,9 +1,15 @@
 const form = document.querySelector("#qr-form");
 const submitButton = document.querySelector("#submit-button");
 const statusBox = document.querySelector("#status");
+const qrTypeField = document.querySelector("#qr-type");
+const qrTypeFieldGroups = document.querySelectorAll("[data-qr-type-fields]");
 const textField = document.querySelector("#text");
+const wifiSecurityField = document.querySelector("#wifi-security");
+const wifiPasswordGroup = document.querySelector("#wifi-password-field");
 const filenameField = document.querySelector("#filename");
 const outputFormatField = document.querySelector("#output-format");
+const errorCorrectionField = document.querySelector("#error-correction");
+const borderSizeField = document.querySelector("#border-size");
 const colorModeField = document.querySelector("#color-mode");
 const foregroundColorField = document.querySelector("#foreground-color");
 const foregroundHexField = document.querySelector("#foreground-color-hex");
@@ -32,6 +38,8 @@ const defaultOptions = {
   foregroundColor2: "#0f766e",
   backgroundColor: "#ffffff",
   outputFormat: "png",
+  errorCorrection: "medium",
+  borderSize: "standard",
   colorMode: "solid",
   moduleStyle: "square",
   eyeStyle: "square",
@@ -41,6 +49,37 @@ const defaultOptions = {
 };
 const maxLogoBytes = 2 * 1024 * 1024;
 const hexColorPattern = /^#[0-9a-fA-F]{6}$/;
+const contentRequirements = {
+  text: {
+    selector: "#text",
+    message: "Ajoutez un lien ou un texte d'abord.",
+  },
+  wifi: {
+    selector: "#wifi-ssid",
+    message: "Ajoutez le nom du reseau Wi-Fi.",
+  },
+  email: {
+    selector: "#email-to",
+    message: "Ajoutez le destinataire de l'email.",
+  },
+  phone: {
+    selector: "#phone-number",
+    message: "Ajoutez un numero de telephone.",
+  },
+  sms: {
+    selector: "#sms-number",
+    message: "Ajoutez le numero de telephone du SMS.",
+  },
+  contact: {
+    selector: "#contact-name",
+    message: "Ajoutez le nom du contact.",
+  },
+  location: {
+    selector: "#location-latitude",
+    secondarySelector: "#location-longitude",
+    message: "Ajoutez une latitude et une longitude.",
+  },
+};
 let currentPreview = null;
 
 function setStatus(message, type = "info") {
@@ -144,10 +183,40 @@ function usesGradientColor() {
   return colorModeField.value !== "solid";
 }
 
+function updateQrTypeFields() {
+  qrTypeFieldGroups.forEach((group) => {
+    setOptionGroupVisibility(group, group.dataset.qrTypeFields === qrTypeField.value);
+  });
+  setOptionGroupVisibility(
+    wifiPasswordGroup,
+    qrTypeField.value === "wifi" && wifiSecurityField.value !== "nopass",
+  );
+}
+
 function updateConditionalOptions() {
   setOptionGroupVisibility(secondaryColorGroup, usesGradientColor());
   setOptionGroupVisibility(backgroundColorGroup, !transparentBackgroundField.checked);
-  setOptionGroupVisibility(logoSizeGroup, logoField.files.length > 0);
+  const hasLogo = logoField.files.length > 0;
+  setOptionGroupVisibility(logoSizeGroup, hasLogo);
+  if (hasLogo) {
+    errorCorrectionField.value = "high";
+  }
+}
+
+function validateQrContent() {
+  const requirement = contentRequirements[qrTypeField.value] || contentRequirements.text;
+  const field = document.querySelector(requirement.selector);
+  const secondaryField = requirement.secondarySelector
+    ? document.querySelector(requirement.secondarySelector)
+    : null;
+
+  if (!field.value.trim() || (secondaryField && !secondaryField.value.trim())) {
+    setStatus(requirement.message, "error");
+    field.focus();
+    return false;
+  }
+
+  return true;
 }
 
 function loadImage(url) {
@@ -217,9 +286,10 @@ async function handleSubmit(event) {
   const filename = filenameField.value.trim();
   const logoFile = logoField.files[0];
 
-  if (!text) {
-    setStatus("Ajoutez un lien ou un texte d'abord.", "error");
-    textField.focus();
+  updateQrTypeFields();
+  updateConditionalOptions();
+
+  if (!validateQrContent()) {
     return;
   }
 
@@ -234,8 +304,6 @@ async function handleSubmit(event) {
     foregroundHexField.focus();
     return;
   }
-
-  updateConditionalOptions();
 
   if (usesGradientColor() && !syncPickerFromHex(foregroundColor2Field, foregroundHex2Field)) {
     setStatus("La couleur secondaire doit etre au format hexadecimal, par exemple #0F766E.", "error");
@@ -288,6 +356,8 @@ async function handleSubmit(event) {
 
 function resetAdvancedOptions() {
   outputFormatField.value = defaultOptions.outputFormat;
+  errorCorrectionField.value = defaultOptions.errorCorrection;
+  borderSizeField.value = defaultOptions.borderSize;
   colorModeField.value = defaultOptions.colorMode;
   foregroundColorField.value = defaultOptions.foregroundColor;
   foregroundHexField.value = defaultOptions.foregroundColor.toUpperCase();
@@ -317,6 +387,11 @@ function clearErrorStatus() {
 
 form.addEventListener("input", clearErrorStatus);
 form.addEventListener("change", clearErrorStatus);
+qrTypeField.addEventListener("change", () => {
+  updateQrTypeFields();
+  clearCurrentPreview();
+});
+wifiSecurityField.addEventListener("change", updateQrTypeFields);
 foregroundColorField.addEventListener("input", () => {
   syncHexFromPicker(foregroundColorField, foregroundHexField);
 });
@@ -346,5 +421,6 @@ downloadButton.addEventListener("click", () => {
 });
 copyButton.addEventListener("click", copyCurrentPreview);
 resetOptionsButton.addEventListener("click", resetAdvancedOptions);
+updateQrTypeFields();
 updateLogoSizeOutput();
 updateConditionalOptions();

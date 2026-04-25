@@ -29,17 +29,141 @@
 
       <section class="panel">
         <form id="qr-form" class="form" enctype="multipart/form-data" novalidate>
-          <div class="field">
-            <label for="text">Lien ou texte</label>
-            <textarea
-              id="text"
-              name="text"
-              rows="6"
-              placeholder="https://example.com ou votre texte"
-              required
-            ></textarea>
-            <p class="hint">Le QR code contiendra exactement cette valeur.</p>
-          </div>
+          <fieldset class="content-section">
+            <legend>Contenu</legend>
+
+            <div class="field">
+              <label for="qr-type">Type de QR code</label>
+              <select id="qr-type" name="qr_type">
+                <option value="text" selected>Lien ou texte</option>
+                <option value="wifi">Wi-Fi</option>
+                <option value="email">Email</option>
+                <option value="phone">T&eacute;l&eacute;phone</option>
+                <option value="sms">SMS</option>
+                <option value="contact">Contact</option>
+                <option value="location">Localisation</option>
+              </select>
+            </div>
+
+            <div id="qr-fields-text" class="qr-type-fields" data-qr-type-fields="text">
+              <div class="field">
+                <label for="text">Lien ou texte</label>
+                <textarea
+                  id="text"
+                  name="text"
+                  rows="6"
+                  placeholder="https://example.com ou votre texte"
+                ></textarea>
+              </div>
+            </div>
+
+            <div id="qr-fields-wifi" class="qr-type-fields" data-qr-type-fields="wifi" hidden>
+              <div class="option-grid">
+                <div class="field">
+                  <label for="wifi-ssid">Nom du r&eacute;seau</label>
+                  <input id="wifi-ssid" name="wifi_ssid" type="text" disabled>
+                </div>
+
+                <div class="field">
+                  <label for="wifi-security">S&eacute;curit&eacute;</label>
+                  <select id="wifi-security" name="wifi_security" disabled>
+                    <option value="WPA" selected>WPA/WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">Aucune</option>
+                  </select>
+                </div>
+
+                <div id="wifi-password-field" class="field">
+                  <label for="wifi-password">Mot de passe</label>
+                  <input id="wifi-password" name="wifi_password" type="text" autocomplete="off" disabled>
+                </div>
+              </div>
+
+              <label class="checkbox-field" for="wifi-hidden">
+                <input id="wifi-hidden" name="wifi_hidden" type="checkbox" disabled>
+                <span>R&eacute;seau masqu&eacute;</span>
+              </label>
+            </div>
+
+            <div id="qr-fields-email" class="qr-type-fields" data-qr-type-fields="email" hidden>
+              <div class="field">
+                <label for="email-to">Destinataire</label>
+                <input id="email-to" name="email_to" type="email" placeholder="contact@example.com" disabled>
+              </div>
+
+              <div class="field">
+                <label for="email-subject">Sujet</label>
+                <input id="email-subject" name="email_subject" type="text" disabled>
+              </div>
+
+              <div class="field">
+                <label for="email-body">Message</label>
+                <textarea id="email-body" name="email_body" rows="4" disabled></textarea>
+              </div>
+            </div>
+
+            <div id="qr-fields-phone" class="qr-type-fields" data-qr-type-fields="phone" hidden>
+              <div class="field">
+                <label for="phone-number">Num&eacute;ro de t&eacute;l&eacute;phone</label>
+                <input id="phone-number" name="phone_number" type="tel" placeholder="+33612345678" disabled>
+              </div>
+            </div>
+
+            <div id="qr-fields-sms" class="qr-type-fields" data-qr-type-fields="sms" hidden>
+              <div class="field">
+                <label for="sms-number">Num&eacute;ro de t&eacute;l&eacute;phone</label>
+                <input id="sms-number" name="sms_number" type="tel" placeholder="+33612345678" disabled>
+              </div>
+
+              <div class="field">
+                <label for="sms-message">Message</label>
+                <textarea id="sms-message" name="sms_message" rows="4" disabled></textarea>
+              </div>
+            </div>
+
+            <div id="qr-fields-contact" class="qr-type-fields" data-qr-type-fields="contact" hidden>
+              <div class="option-grid">
+                <div class="field">
+                  <label for="contact-name">Nom complet</label>
+                  <input id="contact-name" name="contact_name" type="text" disabled>
+                </div>
+
+                <div class="field">
+                  <label for="contact-org">Entreprise</label>
+                  <input id="contact-org" name="contact_org" type="text" disabled>
+                </div>
+
+                <div class="field">
+                  <label for="contact-phone">T&eacute;l&eacute;phone</label>
+                  <input id="contact-phone" name="contact_phone" type="tel" disabled>
+                </div>
+
+                <div class="field">
+                  <label for="contact-email">Email</label>
+                  <input id="contact-email" name="contact_email" type="email" disabled>
+                </div>
+
+                <div class="field">
+                  <label for="contact-url">Site web</label>
+                  <input id="contact-url" name="contact_url" type="url" disabled>
+                </div>
+              </div>
+            </div>
+
+            <div id="qr-fields-location" class="qr-type-fields" data-qr-type-fields="location" hidden>
+              <div class="option-grid">
+                <div class="field">
+                  <label for="location-latitude">Latitude</label>
+                  <input id="location-latitude" name="location_latitude" type="text" inputmode="decimal" placeholder="48.8566" disabled>
+                </div>
+
+                <div class="field">
+                  <label for="location-longitude">Longitude</label>
+                  <input id="location-longitude" name="location_longitude" type="text" inputmode="decimal" placeholder="2.3522" disabled>
+                </div>
+              </div>
+            </div>
+          </fieldset>
 
           <div class="field">
             <label for="filename">Nom du fichier</label>
@@ -77,6 +201,25 @@
                       <option value="medium" selected>Standard</option>
                       <option value="high">Haute</option>
                       <option value="very_high">Tr&egrave;s haute</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="error-correction">Correction d'erreur</label>
+                    <select id="error-correction" name="error_correction">
+                      <option value="low">Basse</option>
+                      <option value="medium" selected>Standard</option>
+                      <option value="quartile">Haute</option>
+                      <option value="high">Maximale</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="border-size">Marge autour du QR code</label>
+                    <select id="border-size" name="border_size">
+                      <option value="small">Petite</option>
+                      <option value="standard" selected>Standard</option>
+                      <option value="large">Large</option>
                     </select>
                   </div>
                 </div>
@@ -121,7 +264,7 @@
                   </div>
 
                   <div id="secondary-color-field" class="field color-field" hidden>
-                    <label for="foreground-color-2">Couleur secondaire du AR code</label>
+                    <label for="foreground-color-2">Couleur secondaire du QR code</label>
                     <div class="color-control">
                       <input
                         id="foreground-color-2"
