@@ -1,14 +1,23 @@
 # QR Code Converter
 
-A small Flask web app that generates a PNG QR code from text or a link.
+A small Flask web app that generates customizable QR codes from links, text, Wi-Fi credentials, email, phone, SMS, contact cards, or locations.
 
-The app does not store user data. It renders a web page, accepts text input, generates a QR code on the server, and sends the PNG back as a browser download.
+The app does not store user data. It renders a web page, accepts form input, generates the QR code on the server, and returns an image preview that can be downloaded or copied from the browser.
 
 ## Features
 
-- accepts free-form text or a URL
-- generates the QR code with Python
-- downloads the PNG directly from the browser
+- supports QR codes for text/URL, Wi-Fi, email, phone, SMS, vCard contact, and location
+- generates PNG or SVG files with Python
+- shows a preview before download
+- can copy the generated QR code image to the clipboard
+- supports solid colors and gradients
+- supports custom foreground, secondary, background, and caption colors
+- supports transparent backgrounds
+- customizes module shapes and QR eye styles
+- supports central logos with cleaned QR modules underneath
+- supports logo size, resolution quality, error correction, and margin size
+- can add a caption below the QR code
+- displays readability warnings for risky settings
 - sanitizes the output file name automatically
 - ready for local development, Docker, and Render
 
@@ -16,7 +25,7 @@ The app does not store user data. It renders a web page, accepts text input, gen
 
 - Python 3
 - Flask for the web app
-- `qrcode` + Pillow to generate the PNG image
+- `qrcode` + Pillow to generate PNG and SVG QR codes
 - Waitress for production serving
 - Docker for deployment packaging
 
@@ -29,6 +38,7 @@ The app does not store user data. It renders a web page, accepts text input, gen
 |-- Dockerfile
 |-- render.yaml
 |-- serve.py
+|-- qr_payload.py
 |-- qr_service.py
 |-- requirements.txt
 |-- requirements-dev.txt
@@ -39,6 +49,7 @@ The app does not store user data. It renders a web page, accepts text input, gen
 |   `-- style.css
 `-- tests/
     |-- test_app.py
+    |-- test_qr_payload.py
     `-- test_qr_service.py
 ```
 
@@ -129,10 +140,70 @@ If you use the included `render.yaml`, Render can read the service definition di
 
 ## Usage
 
-1. Enter text or a link.
-2. Choose an output file name.
-3. Click `Generate and download`.
-4. The browser starts downloading the PNG file.
+1. Choose a QR code type.
+2. Fill in the fields for that type.
+3. Choose an output file name.
+4. Open advanced options if you want to customize the design.
+5. Click `Generate preview`.
+6. Download or copy the generated QR code.
+
+Supported QR code types:
+
+- Link or free-form text
+- Wi-Fi network
+- Email
+- Phone call
+- SMS
+- Contact card
+- Location
+
+Advanced options include:
+
+- PNG or SVG export
+- resolution quality
+- error correction level
+- QR code margin
+- foreground/background colors
+- gradients
+- transparent background
+- module and eye shapes
+- central logo
+- caption below the image
+
+The readability panel gives non-blocking warnings when settings may reduce scan reliability, such as low contrast, small margins, large logos, or transparent backgrounds with light QR colors.
+
+## API Endpoint
+
+The main generation endpoint is:
+
+```text
+POST /api/qr-code
+```
+
+It accepts form data or JSON. Common fields include:
+
+- `qr_type`
+- `text`
+- `filename`
+- `output_format`
+- `foreground_color`
+- `foreground_color_2`
+- `background_color`
+- `color_mode`
+- `module_style`
+- `eye_style`
+- `quality`
+- `error_correction`
+- `border_size`
+- `transparent_background`
+- `logo`
+- `logo_size`
+- `caption_enabled`
+- `caption_text`
+- `caption_size`
+- `caption_color`
+
+The endpoint returns an image attachment with either `image/png` or `image/svg+xml`.
 
 ## Where Is the File Saved?
 
