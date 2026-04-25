@@ -6,7 +6,7 @@
     <title>Convertisseur de lien en QR code</title>
     <meta
       name="description"
-      content="Cr&eacute;ez un QR code PNG personnalis&eacute; avec couleurs, formes, logo central et qualit&eacute; de r&eacute;solution au choix."
+      content="Cr&eacute;ez un QR code PNG ou SVG personnalis&eacute; avec couleurs, formes, logo central et qualit&eacute; de r&eacute;solution au choix."
     >
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
@@ -16,7 +16,7 @@
         <p class="eyebrow">Convertisseur QR</p>
         <h1>Cr&eacute;ez un QR code personnalis&eacute;.</h1>
         <p class="lede">
-          Collez votre URL, ajustez le style, ajoutez un logo si besoin, puis t&eacute;l&eacute;chargez un PNG pr&ecirc;t &agrave; partager.
+          Collez votre URL, ajustez le style, ajoutez un logo si besoin, puis t&eacute;l&eacute;chargez un QR code pr&ecirc;t &agrave; partager.
         </p>
         <div class="hero-card" aria-label="Fonctionnalit&eacute;s principales">
           <ul class="feature-list">
@@ -50,7 +50,6 @@
               maxlength="80"
               placeholder="mon-qr-code"
             >
-            <p class="hint">L'extension <code>.png</code> est ajout&eacute;e automatiquement.</p>
           </div>
 
           <details class="advanced-options">
@@ -59,161 +58,184 @@
             </summary>
 
             <div class="advanced-content">
-              <div class="field">
-                <label for="output-format">Format du fichier</label>
-                <select id="output-format" name="output_format">
-                  <option value="png" selected>PNG</option>
-                  <option value="svg">SVG</option>
-                </select>
-              </div>
+              <fieldset class="option-section option-section--format">
+                <legend>Format et qualit&eacute;</legend>
 
-              <div class="field">
-                <label for="color-mode">Mode de couleur</label>
-                <select id="color-mode" name="color_mode">
-                  <option value="solid" selected>Couleur unie</option>
-                  <option value="horizontal">D&eacute;grad&eacute; horizontal</option>
-                  <option value="vertical">D&eacute;grad&eacute; vertical</option>
-                  <option value="radial">D&eacute;grad&eacute; radial</option>
-                  <option value="square">D&eacute;grad&eacute; carr&eacute;</option>
-                </select>
-              </div>
+                <div class="option-grid">
+                  <div class="field">
+                    <label for="output-format">Format du fichier</label>
+                    <select id="output-format" name="output_format">
+                      <option value="png" selected>PNG</option>
+                      <option value="svg">SVG</option>
+                    </select>
+                  </div>
 
-              <div class="option-grid">
-                <div class="field color-field">
-                  <label for="foreground-color">Couleur du QR code</label>
-                  <div class="color-control">
-                    <input
-                      id="foreground-color"
-                      name="foreground_color"
-                      type="color"
-                      value="#000000"
-                    >
-                    <input
-                      id="foreground-color-hex"
-                      class="color-hex"
-                      type="text"
-                      value="#000000"
-                      maxlength="7"
-                      pattern="#[0-9a-fA-F]{6}"
-                      aria-label="Code hexad&eacute;cimal de la couleur du QR code"
-                      autocomplete="off"
-                      spellcheck="false"
-                    >
+                  <div class="field">
+                    <label for="quality">Qualit&eacute; de r&eacute;solution</label>
+                    <select id="quality" name="quality">
+                      <option value="low">Bas</option>
+                      <option value="medium" selected>Standard</option>
+                      <option value="high">Haute</option>
+                      <option value="very_high">Tr&egrave;s haute</option>
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="option-section option-section--colors">
+                <legend>Couleurs</legend>
+
+                <div class="field">
+                  <label for="color-mode">Mode de couleur</label>
+                  <select id="color-mode" name="color_mode">
+                    <option value="solid" selected>Couleur unie</option>
+                    <option value="horizontal">D&eacute;grad&eacute; horizontal</option>
+                    <option value="vertical">D&eacute;grad&eacute; vertical</option>
+                    <option value="radial">D&eacute;grad&eacute; radial</option>
+                    <option value="square">D&eacute;grad&eacute; carr&eacute;</option>
+                  </select>
+                </div>
+
+                <div class="option-grid">
+                  <div class="field color-field">
+                    <label for="foreground-color">Couleur du QR code</label>
+                    <div class="color-control">
+                      <input
+                        id="foreground-color"
+                        name="foreground_color"
+                        type="color"
+                        value="#000000"
+                      >
+                      <input
+                        id="foreground-color-hex"
+                        class="color-hex"
+                        type="text"
+                        value="#000000"
+                        maxlength="7"
+                        pattern="#[0-9a-fA-F]{6}"
+                        aria-label="Code hexad&eacute;cimal de la couleur du QR code"
+                        autocomplete="off"
+                        spellcheck="false"
+                      >
+                    </div>
+                  </div>
+
+                  <div id="secondary-color-field" class="field color-field" hidden>
+                    <label for="foreground-color-2">Couleur secondaire du AR code</label>
+                    <div class="color-control">
+                      <input
+                        id="foreground-color-2"
+                        name="foreground_color_2"
+                        type="color"
+                        value="#0f766e"
+                        disabled
+                      >
+                      <input
+                        id="foreground-color-2-hex"
+                        class="color-hex"
+                        type="text"
+                        value="#0F766E"
+                        maxlength="7"
+                        pattern="#[0-9a-fA-F]{6}"
+                        aria-label="Code hexad&eacute;cimal de la couleur secondaire"
+                        autocomplete="off"
+                        spellcheck="false"
+                        disabled
+                      >
+                    </div>
+                  </div>
+
+                  <div id="background-color-field" class="field color-field">
+                    <label for="background-color">Couleur du fond</label>
+                    <div class="color-control">
+                      <input
+                        id="background-color"
+                        name="background_color"
+                        type="color"
+                        value="#ffffff"
+                      >
+                      <input
+                        id="background-color-hex"
+                        class="color-hex"
+                        type="text"
+                        value="#FFFFFF"
+                        maxlength="7"
+                        pattern="#[0-9a-fA-F]{6}"
+                        aria-label="Code hexad&eacute;cimal de la couleur du fond"
+                        autocomplete="off"
+                        spellcheck="false"
+                      >
+                    </div>
                   </div>
                 </div>
 
-                <div class="field color-field">
-                  <label for="foreground-color-2">Couleur secondaire</label>
-                  <div class="color-control">
-                    <input
-                      id="foreground-color-2"
-                      name="foreground_color_2"
-                      type="color"
-                      value="#0f766e"
-                    >
-                    <input
-                      id="foreground-color-2-hex"
-                      class="color-hex"
-                      type="text"
-                      value="#0F766E"
-                      maxlength="7"
-                      pattern="#[0-9a-fA-F]{6}"
-                      aria-label="Code hexad&eacute;cimal de la couleur secondaire"
-                      autocomplete="off"
-                      spellcheck="false"
-                    >
+                <label class="checkbox-field" for="transparent-background">
+                  <input
+                    id="transparent-background"
+                    name="transparent_background"
+                    type="checkbox"
+                  >
+                  <span>Fond transparent</span>
+                </label>
+              </fieldset>
+
+              <fieldset class="option-section option-section--shapes">
+                <legend>Formes</legend>
+
+                <div class="option-grid">
+                  <div class="field">
+                    <label for="module-style">Forme des modules</label>
+                    <select id="module-style" name="module_style">
+                      <option value="square" selected>Classique</option>
+                      <option value="rounded">Arrondi</option>
+                      <option value="circle">Points</option>
+                      <option value="gapped">Espac&eacute;</option>
+                      <option value="vertical">Barres verticales</option>
+                      <option value="horizontal">Barres horizontales</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="eye-style">Style des yeux</label>
+                    <select id="eye-style" name="eye_style">
+                      <option value="square">Classique</option>
+                      <option value="rounded">Arrondi</option>
+                      <option value="circle">Points</option>
+                      <option value="match" selected>Identique aux modules</option>
+                    </select>
                   </div>
                 </div>
+              </fieldset>
 
-                <div class="field color-field">
-                  <label for="background-color">Couleur du fond</label>
-                  <div class="color-control">
-                    <input
-                      id="background-color"
-                      name="background_color"
-                      type="color"
-                      value="#ffffff"
-                    >
-                    <input
-                      id="background-color-hex"
-                      class="color-hex"
-                      type="text"
-                      value="#FFFFFF"
-                      maxlength="7"
-                      pattern="#[0-9a-fA-F]{6}"
-                      aria-label="Code hexad&eacute;cimal de la couleur du fond"
-                      autocomplete="off"
-                      spellcheck="false"
-                    >
-                  </div>
+              <fieldset class="option-section option-section--logo">
+                <legend>Logo</legend>
+
+                <div class="field">
+                  <label for="logo">Logo central</label>
+                  <input
+                    id="logo"
+                    name="logo"
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                  >
+                  <p class="hint">PNG transparent conseill&eacute;. Les modules sous le logo sont nettoy&eacute;s.</p>
                 </div>
-              </div>
 
-              <label class="checkbox-field" for="transparent-background">
-                <input
-                  id="transparent-background"
-                  name="transparent_background"
-                  type="checkbox"
-                >
-                <span>Fond transparent</span>
-              </label>
-
-              <div class="field">
-                <label for="module-style">Forme des modules</label>
-                <select id="module-style" name="module_style">
-                  <option value="square">Classique</option>
-                  <option value="rounded">Arrondi</option>
-                  <option value="circle">Points</option>
-                  <option value="gapped">Espac&eacute;</option>
-                  <option value="vertical">Barres verticales</option>
-                  <option value="horizontal">Barres horizontales</option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label for="eye-style">Style des yeux</label>
-                <select id="eye-style" name="eye_style">
-                  <option value="square" selected>Classique</option>
-                  <option value="rounded">Arrondi</option>
-                  <option value="circle">Points</option>
-                  <option value="match">Identique aux modules</option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label for="quality">Qualit&eacute; de r&eacute;solution</label>
-                <select id="quality" name="quality">
-                  <option value="low">Bas</option>
-                  <option value="medium" selected>Standard</option>
-                  <option value="high">Haute</option>
-                  <option value="very_high">Tr&egrave;s haute</option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label for="logo">Logo central</label>
-                <input
-                  id="logo"
-                  name="logo"
-                  type="file"
-                  accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
-                >
-                <p class="hint">PNG transparent conseill&eacute;. Les modules sous le logo sont nettoy&eacute;s.</p>
-              </div>
-
-              <div class="field range-field">
-                <label for="logo-size">Taille du logo</label>
-                <input
-                  id="logo-size"
-                  name="logo_size"
-                  type="range"
-                  min="10"
-                  max="30"
-                  step="1"
-                  value="22"
-                >
-                <output id="logo-size-output" for="logo-size">22%</output>
-              </div>
+                <div id="logo-size-field" class="field range-field" hidden>
+                  <label for="logo-size">Taille du logo</label>
+                  <input
+                    id="logo-size"
+                    name="logo_size"
+                    type="range"
+                    min="10"
+                    max="30"
+                    step="1"
+                    value="22"
+                    disabled
+                  >
+                  <output id="logo-size-output" for="logo-size">22%</output>
+                </div>
+              </fieldset>
 
               <button id="reset-options" class="secondary-button" type="button">
                 R&eacute;initialiser les options
@@ -231,10 +253,10 @@
             <img id="preview-image" alt="Aper&ccedil;u du QR code g&eacute;n&eacute;r&eacute;">
           </div>
           <div class="preview-actions">
-            <button id="download-button" class="secondary-button" type="button" disabled>
+            <button id="download-button" class="preview-button preview-button--download" type="button" disabled>
               T&eacute;l&eacute;charger
             </button>
-            <button id="copy-button" class="secondary-button" type="button" disabled>
+            <button id="copy-button" class="preview-button preview-button--copy" type="button" disabled>
               Copier l'image
             </button>
           </div>

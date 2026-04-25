@@ -11,11 +11,14 @@ const foregroundColor2Field = document.querySelector("#foreground-color-2");
 const foregroundHex2Field = document.querySelector("#foreground-color-2-hex");
 const backgroundColorField = document.querySelector("#background-color");
 const backgroundHexField = document.querySelector("#background-color-hex");
+const secondaryColorGroup = document.querySelector("#secondary-color-field");
+const backgroundColorGroup = document.querySelector("#background-color-field");
 const transparentBackgroundField = document.querySelector("#transparent-background");
 const moduleStyleField = document.querySelector("#module-style");
 const eyeStyleField = document.querySelector("#eye-style");
 const qualityField = document.querySelector("#quality");
 const logoField = document.querySelector("#logo");
+const logoSizeGroup = document.querySelector("#logo-size-field");
 const logoSizeField = document.querySelector("#logo-size");
 const logoSizeOutput = document.querySelector("#logo-size-output");
 const resetOptionsButton = document.querySelector("#reset-options");
@@ -130,6 +133,23 @@ function updateLogoSizeOutput() {
   logoSizeOutput.textContent = `${logoSizeField.value}%`;
 }
 
+function setOptionGroupVisibility(group, isVisible) {
+  group.hidden = !isVisible;
+  group.querySelectorAll("input, select, textarea").forEach((control) => {
+    control.disabled = !isVisible;
+  });
+}
+
+function usesGradientColor() {
+  return colorModeField.value !== "solid";
+}
+
+function updateConditionalOptions() {
+  setOptionGroupVisibility(secondaryColorGroup, usesGradientColor());
+  setOptionGroupVisibility(backgroundColorGroup, !transparentBackgroundField.checked);
+  setOptionGroupVisibility(logoSizeGroup, logoField.files.length > 0);
+}
+
 function loadImage(url) {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -215,13 +235,15 @@ async function handleSubmit(event) {
     return;
   }
 
-  if (!syncPickerFromHex(foregroundColor2Field, foregroundHex2Field)) {
+  updateConditionalOptions();
+
+  if (usesGradientColor() && !syncPickerFromHex(foregroundColor2Field, foregroundHex2Field)) {
     setStatus("La couleur secondaire doit etre au format hexadecimal, par exemple #0F766E.", "error");
     foregroundHex2Field.focus();
     return;
   }
 
-  if (!syncPickerFromHex(backgroundColorField, backgroundHexField)) {
+  if (!transparentBackgroundField.checked && !syncPickerFromHex(backgroundColorField, backgroundHexField)) {
     setStatus("La couleur du fond doit etre au format hexadecimal, par exemple #FFFFFF.", "error");
     backgroundHexField.focus();
     return;
@@ -280,6 +302,7 @@ function resetAdvancedOptions() {
   logoSizeField.value = defaultOptions.logoSize;
   logoField.value = "";
   updateLogoSizeOutput();
+  updateConditionalOptions();
   clearCurrentPreview();
   setStatus("Options avancees reinitialisees.", "info");
 }
@@ -313,6 +336,9 @@ backgroundHexField.addEventListener("blur", () => {
   syncPickerFromHex(backgroundColorField, backgroundHexField);
 });
 logoSizeField.addEventListener("input", updateLogoSizeOutput);
+colorModeField.addEventListener("change", updateConditionalOptions);
+transparentBackgroundField.addEventListener("change", updateConditionalOptions);
+logoField.addEventListener("change", updateConditionalOptions);
 downloadButton.addEventListener("click", () => {
   if (currentPreview) {
     triggerDownload(currentPreview.blob, currentPreview.filename);
@@ -321,3 +347,4 @@ downloadButton.addEventListener("click", () => {
 copyButton.addEventListener("click", copyCurrentPreview);
 resetOptionsButton.addEventListener("click", resetAdvancedOptions);
 updateLogoSizeOutput();
+updateConditionalOptions();

@@ -4,7 +4,9 @@
   --panel: rgba(255, 252, 246, 0.92);
   --ink: #122033;
   --muted: #4f5f71;
-  --line: rgba(18, 32, 51, 0.14);
+  --line: rgba(15, 118, 110, 0.48);
+  --line-soft: rgba(15, 118, 110, 0.34);
+  --line-strong: rgba(15, 118, 110, 0.68);
   --primary: #0f766e;
   --primary-dark: #0a5a55;
   --danger: #b9382f;
@@ -14,6 +16,10 @@
 
 * {
   box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 body {
@@ -84,7 +90,7 @@ h1 {
   padding: 16px 18px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(18, 32, 51, 0.08);
+  border: 1px solid var(--line-soft);
 }
 
 .feature-list {
@@ -115,7 +121,7 @@ input,
 select {
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid rgba(18, 32, 51, 0.12);
+  border: 1px solid var(--line-soft);
   border-radius: 18px;
   font: inherit;
   color: var(--ink);
@@ -211,7 +217,7 @@ input[type="file"] {
 }
 
 .advanced-options {
-  border: 1px solid rgba(18, 32, 51, 0.1);
+  border: 1px solid var(--line);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.52);
   overflow: hidden;
@@ -250,9 +256,36 @@ input[type="file"] {
 }
 
 .advanced-content {
-  padding: 0 16px 16px;
+  padding: 0 14px 16px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
+}
+
+.option-section {
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.48);
+  display: grid;
+  gap: 14px;
+}
+
+.option-section:first-of-type {
+  margin-top: 0;
+}
+
+.option-section legend {
+  padding: 0 8px;
+  color: var(--primary-dark);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.option-section legend + .option-grid,
+.option-section legend + .field {
+  margin-top: 2px;
 }
 
 .option-grid {
@@ -261,10 +294,18 @@ input[type="file"] {
   gap: 14px;
 }
 
+.option-section--shapes .option-grid {
+  grid-template-columns: minmax(0, 1.25fr) minmax(190px, 0.75fr);
+}
+
+.option-section--shapes select {
+  text-overflow: ellipsis;
+}
+
 .secondary-button {
   justify-self: start;
   appearance: none;
-  border: 1px solid rgba(18, 32, 51, 0.14);
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 11px 16px;
   font: inherit;
@@ -325,7 +366,7 @@ input[type="file"] {
   padding: 18px;
   display: grid;
   place-items: center;
-  border: 1px dashed rgba(18, 32, 51, 0.18);
+  border: 1px dashed var(--line-strong);
   border-radius: 18px;
   background:
     linear-gradient(45deg, rgba(18, 32, 51, 0.04) 25%, transparent 25%),
@@ -346,6 +387,40 @@ input[type="file"] {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.preview-button {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 11px 16px;
+  font: inherit;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.preview-button--download {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  box-shadow: 0 12px 24px rgba(15, 118, 110, 0.22);
+}
+
+.preview-button--copy {
+  background: #243247;
+  box-shadow: 0 12px 24px rgba(36, 50, 71, 0.18);
+}
+
+.preview-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.preview-button:disabled {
+  cursor: not-allowed;
+  background: rgba(79, 95, 113, 0.42);
+  box-shadow: none;
+  opacity: 0.72;
+  transform: none;
 }
 
 .status {
