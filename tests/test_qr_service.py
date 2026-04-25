@@ -7,7 +7,9 @@ from qr_service import (
     QRCodeRequestError,
     build_download_name,
     clear_intersecting_modules,
+    generate_qr_file,
     generate_qr_png,
+    generate_qr_svg,
 )
 
 
@@ -33,6 +35,10 @@ def build_logo_file() -> io.BytesIO:
 
 def test_build_download_name_adds_extension_when_missing():
     assert build_download_name("my-file") == "my-file.png"
+
+
+def test_build_download_name_supports_svg_extension():
+    assert build_download_name("my-file.png", "svg") == "my-file.svg"
 
 
 def test_build_download_name_sanitizes_invalid_characters():
@@ -87,6 +93,56 @@ def test_generate_qr_png_supports_custom_colors_and_shape():
     assert image_bytes.startswith(b"\x89PNG\r\n\x1a\n")
 
 
+def test_generate_qr_png_supports_gradients():
+    image_bytes = generate_qr_png(
+        "https://example.com",
+        foreground_color="#000000",
+        foreground_color_2="#0f766e",
+        background_color="#ffffff",
+        color_mode="horizontal",
+    )
+
+    assert image_bytes.startswith(b"\x89PNG\r\n\x1a\n")
+
+
+def test_generate_qr_png_supports_transparent_background():
+    image_bytes = generate_qr_png(
+        "https://example.com",
+        foreground_color="#000000",
+        background_color="#ffffff",
+        transparent_background=True,
+    )
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+
+    assert image.getpixel((0, 0))[3] == 0
+
+
+def test_generate_qr_svg_returns_svg():
+    svg_bytes = generate_qr_svg(
+        "https://example.com",
+        foreground_color="#000000",
+        background_color="#ffffff",
+        module_style="circle",
+        eye_style="rounded",
+        color_mode="radial",
+    )
+
+    assert svg_bytes.startswith(b"<svg")
+    assert b"radialGradient" in svg_bytes
+    assert b"<circle" in svg_bytes
+
+
+def test_generate_qr_file_supports_svg():
+    file_bytes, mimetype, extension = generate_qr_file(
+        "https://example.com",
+        output_format="svg",
+    )
+
+    assert file_bytes.startswith(b"<svg")
+    assert mimetype == "image/svg+xml"
+    assert extension == "svg"
+
+
 def test_generate_qr_png_preserves_logo_colors():
     image_bytes = generate_qr_png(
         "https://example.com",
@@ -134,6 +190,21 @@ def test_generate_qr_png_rejects_low_contrast_colors():
 def test_generate_qr_png_rejects_unknown_shape():
     with pytest.raises(QRCodeRequestError):
         generate_qr_png("https://example.com", module_style="triangle")
+
+
+def test_generate_qr_png_rejects_unknown_eye_style():
+    with pytest.raises(QRCodeRequestError):
+        generate_qr_png("https://example.com", eye_style="diamond")
+
+
+def test_generate_qr_png_rejects_unknown_color_mode():
+    with pytest.raises(QRCodeRequestError):
+        generate_qr_png("https://example.com", color_mode="rainbow")
+
+
+def test_generate_qr_png_rejects_invalid_logo_size():
+    with pytest.raises(QRCodeRequestError):
+        generate_qr_png("https://example.com", logo_size="80")
 
 
 def test_generate_qr_png_rejects_unknown_quality():

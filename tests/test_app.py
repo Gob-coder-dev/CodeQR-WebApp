@@ -27,6 +27,11 @@ def test_index_page_renders():
     assert b"Logo central" in response.data
     assert b"foreground-color-hex" in response.data
     assert b"background-color-hex" in response.data
+    assert b"preview-image" in response.data
+    assert b"output-format" in response.data
+    assert b"eye-style" in response.data
+    assert b"transparent-background" in response.data
+    assert b"logo-size" in response.data
 
 
 def test_qr_code_endpoint_returns_png_download():
@@ -85,6 +90,29 @@ def test_qr_code_endpoint_accepts_logo_upload():
     assert response.mimetype == "image/png"
     assert response.data.startswith(b"\x89PNG\r\n\x1a\n")
     assert "with-logo.png" in response.headers["Content-Disposition"]
+
+
+def test_qr_code_endpoint_returns_svg_download():
+    client = create_app().test_client()
+
+    response = client.post(
+        "/api/qr-code",
+        data={
+            "text": "https://example.com",
+            "filename": "custom",
+            "output_format": "svg",
+            "foreground_color": "#000000",
+            "background_color": "#ffffff",
+            "module_style": "circle",
+            "eye_style": "rounded",
+            "color_mode": "horizontal",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.mimetype == "image/svg+xml"
+    assert response.data.startswith(b"<svg")
+    assert "custom.svg" in response.headers["Content-Disposition"]
 
 
 def test_qr_code_endpoint_rejects_invalid_advanced_option():

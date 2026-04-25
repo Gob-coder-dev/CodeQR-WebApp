@@ -13,7 +13,7 @@ ensure_project_interpreter()
 from flask import Flask, jsonify, render_template, request, send_file
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from qr_service import QRCodeRequestError, build_download_name, generate_qr_png
+from qr_service import QRCodeRequestError, build_download_name, generate_qr_file
 
 MAX_REQUEST_BYTES = 3 * 1024 * 1024
 
@@ -61,21 +61,27 @@ def create_app() -> Flask:
         logo_file = logo_upload.stream if logo_upload and logo_upload.filename else None
 
         try:
-            download_name = build_download_name(filename)
-            image_bytes = generate_qr_png(
+            image_bytes, mimetype, extension = generate_qr_file(
                 text,
+                output_format=payload.get("output_format", ""),
                 foreground_color=payload.get("foreground_color", ""),
+                foreground_color_2=payload.get("foreground_color_2", ""),
                 background_color=payload.get("background_color", ""),
                 module_style=payload.get("module_style", ""),
+                eye_style=payload.get("eye_style", ""),
                 quality=payload.get("quality", ""),
+                color_mode=payload.get("color_mode", ""),
+                transparent_background=payload.get("transparent_background", ""),
+                logo_size=payload.get("logo_size", ""),
                 logo_file=logo_file,
             )
+            download_name = build_download_name(filename, extension)
         except QRCodeRequestError as error:
             return jsonify({"error": str(error)}), HTTPStatus.BAD_REQUEST
 
         return send_file(
             io.BytesIO(image_bytes),
-            mimetype="image/png",
+            mimetype=mimetype,
             as_attachment=True,
             download_name=download_name,
             max_age=0,

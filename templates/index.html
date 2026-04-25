@@ -59,6 +59,25 @@
             </summary>
 
             <div class="advanced-content">
+              <div class="field">
+                <label for="output-format">Format du fichier</label>
+                <select id="output-format" name="output_format">
+                  <option value="png" selected>PNG</option>
+                  <option value="svg">SVG</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="color-mode">Mode de couleur</label>
+                <select id="color-mode" name="color_mode">
+                  <option value="solid" selected>Couleur unie</option>
+                  <option value="horizontal">D&eacute;grad&eacute; horizontal</option>
+                  <option value="vertical">D&eacute;grad&eacute; vertical</option>
+                  <option value="radial">D&eacute;grad&eacute; radial</option>
+                  <option value="square">D&eacute;grad&eacute; carr&eacute;</option>
+                </select>
+              </div>
+
               <div class="option-grid">
                 <div class="field color-field">
                   <label for="foreground-color">Couleur du QR code</label>
@@ -77,6 +96,29 @@
                       maxlength="7"
                       pattern="#[0-9a-fA-F]{6}"
                       aria-label="Code hexad&eacute;cimal de la couleur du QR code"
+                      autocomplete="off"
+                      spellcheck="false"
+                    >
+                  </div>
+                </div>
+
+                <div class="field color-field">
+                  <label for="foreground-color-2">Couleur secondaire</label>
+                  <div class="color-control">
+                    <input
+                      id="foreground-color-2"
+                      name="foreground_color_2"
+                      type="color"
+                      value="#0f766e"
+                    >
+                    <input
+                      id="foreground-color-2-hex"
+                      class="color-hex"
+                      type="text"
+                      value="#0F766E"
+                      maxlength="7"
+                      pattern="#[0-9a-fA-F]{6}"
+                      aria-label="Code hexad&eacute;cimal de la couleur secondaire"
                       autocomplete="off"
                       spellcheck="false"
                     >
@@ -107,6 +149,15 @@
                 </div>
               </div>
 
+              <label class="checkbox-field" for="transparent-background">
+                <input
+                  id="transparent-background"
+                  name="transparent_background"
+                  type="checkbox"
+                >
+                <span>Fond transparent</span>
+              </label>
+
               <div class="field">
                 <label for="module-style">Forme des modules</label>
                 <select id="module-style" name="module_style">
@@ -116,6 +167,16 @@
                   <option value="gapped">Espac&eacute;</option>
                   <option value="vertical">Barres verticales</option>
                   <option value="horizontal">Barres horizontales</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="eye-style">Style des yeux</label>
+                <select id="eye-style" name="eye_style">
+                  <option value="square" selected>Classique</option>
+                  <option value="rounded">Arrondi</option>
+                  <option value="circle">Points</option>
+                  <option value="match">Identique aux modules</option>
                 </select>
               </div>
 
@@ -140,6 +201,20 @@
                 <p class="hint">PNG transparent conseill&eacute;. Les modules sous le logo sont nettoy&eacute;s.</p>
               </div>
 
+              <div class="field range-field">
+                <label for="logo-size">Taille du logo</label>
+                <input
+                  id="logo-size"
+                  name="logo_size"
+                  type="range"
+                  min="10"
+                  max="30"
+                  step="1"
+                  value="22"
+                >
+                <output id="logo-size-output" for="logo-size">22%</output>
+              </div>
+
               <button id="reset-options" class="secondary-button" type="button">
                 R&eacute;initialiser les options
               </button>
@@ -147,12 +222,26 @@
           </details>
 
           <button id="submit-button" class="button" type="submit">
-            G&eacute;n&eacute;rer et t&eacute;l&eacute;charger
+            G&eacute;n&eacute;rer un aper&ccedil;u
           </button>
         </form>
 
+        <div id="preview" class="preview" hidden>
+          <div class="preview-frame">
+            <img id="preview-image" alt="Aper&ccedil;u du QR code g&eacute;n&eacute;r&eacute;">
+          </div>
+          <div class="preview-actions">
+            <button id="download-button" class="secondary-button" type="button" disabled>
+              T&eacute;l&eacute;charger
+            </button>
+            <button id="copy-button" class="secondary-button" type="button" disabled>
+              Copier l'image
+            </button>
+          </div>
+        </div>
+
         <div id="status" class="status" aria-live="polite">
-          Le fichier sera t&eacute;l&eacute;charg&eacute; dans le dossier par d&eacute;faut du navigateur.
+          G&eacute;n&eacute;rez un aper&ccedil;u, puis t&eacute;l&eacute;chargez ou copiez le QR code.
         </div>
       </section>
     </main>
