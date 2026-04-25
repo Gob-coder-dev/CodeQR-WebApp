@@ -76,18 +76,17 @@ def test_generate_qr_png_preserves_logo_colors():
 
 
 def test_clear_intersecting_modules_clears_whole_module():
-    image = Image.new("RGBA", (20, 20), (15, 118, 110, 255))
+    qr_code = FakeQRCode()
 
     clear_intersecting_modules(
-        image,
-        FakeQRCode(),
+        qr_code,
         (5, 5, 6, 6),
-        (255, 255, 255),
     )
 
-    assert image.getpixel((0, 0)) == (255, 255, 255, 255)
-    assert image.getpixel((9, 9)) == (255, 255, 255, 255)
-    assert image.getpixel((10, 0)) == (15, 118, 110, 255)
+    assert qr_code.modules == [
+        [False, True],
+        [True, True],
+    ]
 
 
 def test_generate_qr_png_rejects_invalid_color():

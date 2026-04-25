@@ -5,7 +5,7 @@ import re
 from typing import BinaryIO, Final
 
 import qrcode
-from PIL import Image, ImageDraw, UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError
 from qrcode.constants import ERROR_CORRECT_H, ERROR_CORRECT_M
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.colormasks import SolidFillColorMask
@@ -132,28 +132,31 @@ def load_logo_image(logo_file: BinaryIO | None) -> Image.Image | None:
 def paste_logo(
     image: Image.Image,
     logo: Image.Image,
-    qr_code: qrcode.QRCode,
-    background: tuple[int, int, int],
+    logo_box: tuple[int, int, int, int],
 ) -> Image.Image:
     canvas = image.convert("RGBA")
-    width, _ = canvas.size
-    logo_size = int(width * LOGO_IMAGE_RATIO)
+    logo_left, logo_top, _, _ = logo_box
+    canvas.alpha_composite(logo, (logo_left, logo_top))
+    return canvas
 
+
+def prepare_logo(
+    logo: Image.Image,
+    image_size: int,
+) -> tuple[Image.Image, tuple[int, int, int, int]] | None:
+    logo_size = int(image_size * LOGO_IMAGE_RATIO)
     logo = crop_transparent_padding(logo)
     if logo is None:
-        return canvas
+        return None
 
     logo.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
     if logo.width == 0 or logo.height == 0:
-        return canvas
+        return None
 
-    logo_left = (width - logo.width) // 2
-    logo_top = (width - logo.height) // 2
+    logo_left = (image_size - logo.width) // 2
+    logo_top = (image_size - logo.height) // 2
     logo_box = (logo_left, logo_top, logo_left + logo.width, logo_top + logo.height)
-
-    clear_intersecting_modules(canvas, qr_code, logo_box, background)
-    canvas.alpha_composite(logo, (logo_left, logo_top))
-    return canvas
+    return logo, logo_box
 
 
 def crop_transparent_padding(logo: Image.Image) -> Image.Image | None:
@@ -166,13 +169,9 @@ def crop_transparent_padding(logo: Image.Image) -> Image.Image | None:
 
 
 def clear_intersecting_modules(
-    image: Image.Image,
     qr_code: qrcode.QRCode,
     clear_box: tuple[int, int, int, int],
-    background: tuple[int, int, int],
 ) -> None:
-    draw = ImageDraw.Draw(image)
-    fill = (*background, 255)
     box_size = qr_code.box_size
     border = qr_code.border
 
@@ -189,10 +188,7 @@ def clear_intersecting_modules(
             if not boxes_intersect((left, top, right, bottom), clear_box):
                 continue
 
-            draw.rectangle(
-                (left, top, right - 1, bottom - 1),
-                fill=fill,
-            )
+            qr_code.modules[row][col] = False
 
 
 def boxes_intersect(
@@ -227,6 +223,7 @@ def generate_qr_png(
         raise QRCodeRequestError("QR color and background color need more contrast.")
 
     logo = load_logo_image(logo_file)
+    prepared_logo = None
     qr_code = qrcode.QRCode(
         version=None,
         error_correction=ERROR_CORRECT_H if logo else ERROR_CORRECT_M,
@@ -235,6 +232,13 @@ def generate_qr_png(
     )
     qr_code.add_data(value)
     qr_code.make(fit=True)
+
+    if logo:
+        image_size = (qr_code.modules_count + qr_code.border * 2) * qr_code.box_size
+        prepared_logo = prepare_logo(logo, image_size)
+        if prepared_logo:
+            _, logo_box = prepared_logo
+            clear_intersecting_modules(qr_code, logo_box)
 
     image = qr_code.make_image(
         image_factory=StyledPilImage,
@@ -246,8 +250,9 @@ def generate_qr_png(
     )
     output_image = image.get_image()
 
-    if logo:
-        output_image = paste_logo(output_image, logo, qr_code, background)
+    if prepared_logo:
+        prepared_image, logo_box = prepared_logo
+        output_image = paste_logo(output_image, prepared_image, logo_box)
 
     buffer = io.BytesIO()
     output_image.save(buffer, format="PNG")
