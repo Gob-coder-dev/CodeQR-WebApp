@@ -20,7 +20,7 @@ from qrcode.image.styles.moduledrawers.pil import (
 
 
 DEFAULT_FILE_STEM: Final[str] = "qr-code"
-DEFAULT_FOREGROUND_COLOR: Final[str] = "#102033"
+DEFAULT_FOREGROUND_COLOR: Final[str] = "#000000"
 DEFAULT_BACKGROUND_COLOR: Final[str] = "#ffffff"
 DEFAULT_MODULE_STYLE: Final[str] = "square"
 DEFAULT_QUALITY: Final[str] = "high"

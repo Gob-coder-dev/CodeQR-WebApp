@@ -62,22 +62,48 @@
               <div class="option-grid">
                 <div class="field color-field">
                   <label for="foreground-color">Couleur du QR code</label>
-                  <input
-                    id="foreground-color"
-                    name="foreground_color"
-                    type="color"
-                    value="#102033"
-                  >
+                  <div class="color-control">
+                    <input
+                      id="foreground-color"
+                      name="foreground_color"
+                      type="color"
+                      value="#000000"
+                    >
+                    <input
+                      id="foreground-color-hex"
+                      class="color-hex"
+                      type="text"
+                      value="#000000"
+                      maxlength="7"
+                      pattern="#[0-9a-fA-F]{6}"
+                      aria-label="Code hexad&eacute;cimal de la couleur du QR code"
+                      autocomplete="off"
+                      spellcheck="false"
+                    >
+                  </div>
                 </div>
 
                 <div class="field color-field">
                   <label for="background-color">Couleur du fond</label>
-                  <input
-                    id="background-color"
-                    name="background_color"
-                    type="color"
-                    value="#ffffff"
-                  >
+                  <div class="color-control">
+                    <input
+                      id="background-color"
+                      name="background_color"
+                      type="color"
+                      value="#ffffff"
+                    >
+                    <input
+                      id="background-color-hex"
+                      class="color-hex"
+                      type="text"
+                      value="#FFFFFF"
+                      maxlength="7"
+                      pattern="#[0-9a-fA-F]{6}"
+                      aria-label="Code hexad&eacute;cimal de la couleur du fond"
+                      autocomplete="off"
+                      spellcheck="false"
+                    >
+                  </div>
                 </div>
               </div>
 

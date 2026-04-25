@@ -4,19 +4,22 @@ const statusBox = document.querySelector("#status");
 const textField = document.querySelector("#text");
 const filenameField = document.querySelector("#filename");
 const foregroundColorField = document.querySelector("#foreground-color");
+const foregroundHexField = document.querySelector("#foreground-color-hex");
 const backgroundColorField = document.querySelector("#background-color");
+const backgroundHexField = document.querySelector("#background-color-hex");
 const moduleStyleField = document.querySelector("#module-style");
 const qualityField = document.querySelector("#quality");
 const logoField = document.querySelector("#logo");
 const resetOptionsButton = document.querySelector("#reset-options");
 
 const defaultOptions = {
-  foregroundColor: "#102033",
+  foregroundColor: "#000000",
   backgroundColor: "#ffffff",
   moduleStyle: "square",
-  quality: "high",
+  quality: "medium",
 };
 const maxLogoBytes = 2 * 1024 * 1024;
+const hexColorPattern = /^#[0-9a-fA-F]{6}$/;
 
 function setStatus(message, type = "info") {
   statusBox.textContent = message;
@@ -59,6 +62,28 @@ function triggerDownload(blob, filename) {
   window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
 }
 
+function normalizeHexColor(value) {
+  const trimmedValue = value.trim();
+  const prefixedValue = trimmedValue.startsWith("#") ? trimmedValue : `#${trimmedValue}`;
+
+  return hexColorPattern.test(prefixedValue) ? prefixedValue.toUpperCase() : null;
+}
+
+function syncHexFromPicker(colorField, hexField) {
+  hexField.value = colorField.value.toUpperCase();
+}
+
+function syncPickerFromHex(colorField, hexField) {
+  const normalizedValue = normalizeHexColor(hexField.value);
+  if (!normalizedValue) {
+    return false;
+  }
+
+  colorField.value = normalizedValue.toLowerCase();
+  hexField.value = normalizedValue;
+  return true;
+}
+
 async function handleSubmit(event) {
   event.preventDefault();
 
@@ -75,6 +100,18 @@ async function handleSubmit(event) {
   if (logoFile && logoFile.size > maxLogoBytes) {
     setStatus("Le logo doit faire 2 Mo maximum.", "error");
     logoField.focus();
+    return;
+  }
+
+  if (!syncPickerFromHex(foregroundColorField, foregroundHexField)) {
+    setStatus("La couleur du QR code doit etre au format hexadecimal, par exemple #000000.", "error");
+    foregroundHexField.focus();
+    return;
+  }
+
+  if (!syncPickerFromHex(backgroundColorField, backgroundHexField)) {
+    setStatus("La couleur du fond doit etre au format hexadecimal, par exemple #FFFFFF.", "error");
+    backgroundHexField.focus();
     return;
   }
 
@@ -116,7 +153,9 @@ async function handleSubmit(event) {
 
 function resetAdvancedOptions() {
   foregroundColorField.value = defaultOptions.foregroundColor;
+  foregroundHexField.value = defaultOptions.foregroundColor.toUpperCase();
   backgroundColorField.value = defaultOptions.backgroundColor;
+  backgroundHexField.value = defaultOptions.backgroundColor.toUpperCase();
   moduleStyleField.value = defaultOptions.moduleStyle;
   qualityField.value = defaultOptions.quality;
   logoField.value = "";
@@ -133,4 +172,16 @@ function clearErrorStatus() {
 
 form.addEventListener("input", clearErrorStatus);
 form.addEventListener("change", clearErrorStatus);
+foregroundColorField.addEventListener("input", () => {
+  syncHexFromPicker(foregroundColorField, foregroundHexField);
+});
+backgroundColorField.addEventListener("input", () => {
+  syncHexFromPicker(backgroundColorField, backgroundHexField);
+});
+foregroundHexField.addEventListener("blur", () => {
+  syncPickerFromHex(foregroundColorField, foregroundHexField);
+});
+backgroundHexField.addEventListener("blur", () => {
+  syncPickerFromHex(backgroundColorField, backgroundHexField);
+});
 resetOptionsButton.addEventListener("click", resetAdvancedOptions);

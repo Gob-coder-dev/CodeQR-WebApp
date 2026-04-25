@@ -23,6 +23,8 @@ def test_index_page_renders():
 
     assert response.status_code == 200
     assert b"Convertisseur QR" in response.data
+    assert b"foreground-color-hex" in response.data
+    assert b"background-color-hex" in response.data
 
 
 def test_qr_code_endpoint_returns_png_download():
@@ -58,7 +60,7 @@ def test_qr_code_endpoint_accepts_advanced_form_options():
     assert response.status_code == 200
     assert response.mimetype == "image/png"
     assert response.data.startswith(b"\x89PNG\r\n\x1a\n")
-    assert Image.open(io.BytesIO(response.data)).size == (792, 792)
+    assert Image.open(io.BytesIO(response.data)).size == (990, 990)
     assert "custom.png" in response.headers["Content-Disposition"]
 
 
@@ -70,7 +72,7 @@ def test_qr_code_endpoint_accepts_logo_upload():
         data={
             "text": "https://example.com",
             "filename": "with-logo",
-            "foreground_color": "#102033",
+            "foreground_color": "#000000",
             "background_color": "#ffffff",
             "module_style": "circle",
             "logo": (build_logo_file(), "logo.png"),
