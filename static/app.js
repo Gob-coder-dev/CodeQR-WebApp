@@ -6,6 +6,7 @@ const filenameField = document.querySelector("#filename");
 const foregroundColorField = document.querySelector("#foreground-color");
 const backgroundColorField = document.querySelector("#background-color");
 const moduleStyleField = document.querySelector("#module-style");
+const qualityField = document.querySelector("#quality");
 const logoField = document.querySelector("#logo");
 const resetOptionsButton = document.querySelector("#reset-options");
 
@@ -13,6 +14,7 @@ const defaultOptions = {
   foregroundColor: "#102033",
   backgroundColor: "#ffffff",
   moduleStyle: "square",
+  quality: "high",
 };
 const maxLogoBytes = 2 * 1024 * 1024;
 
@@ -116,6 +118,7 @@ function resetAdvancedOptions() {
   foregroundColorField.value = defaultOptions.foregroundColor;
   backgroundColorField.value = defaultOptions.backgroundColor;
   moduleStyleField.value = defaultOptions.moduleStyle;
+  qualityField.value = defaultOptions.quality;
   logoField.value = "";
   setStatus("Options avancees reinitialisees.", "info");
 }

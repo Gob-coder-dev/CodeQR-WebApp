@@ -51,12 +51,14 @@ def test_qr_code_endpoint_accepts_advanced_form_options():
             "foreground_color": "#0f766e",
             "background_color": "#ffffff",
             "module_style": "rounded",
+            "quality": "very_high",
         },
     )
 
     assert response.status_code == 200
     assert response.mimetype == "image/png"
     assert response.data.startswith(b"\x89PNG\r\n\x1a\n")
+    assert Image.open(io.BytesIO(response.data)).size == (792, 792)
     assert "custom.png" in response.headers["Content-Disposition"]
 
 
@@ -97,6 +99,24 @@ def test_qr_code_endpoint_rejects_invalid_advanced_option():
     assert response.status_code == 400
     assert response.json == {
         "error": "QR color and background color need more contrast."
+    }
+
+
+def test_qr_code_endpoint_rejects_invalid_quality():
+    client = create_app().test_client()
+
+    response = client.post(
+        "/api/qr-code",
+        data={
+            "text": "https://example.com",
+            "filename": "custom",
+            "quality": "ultra",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json == {
+        "error": "Selected QR code quality is not supported."
     }
 
 

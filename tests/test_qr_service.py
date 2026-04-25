@@ -48,6 +48,27 @@ def test_generate_qr_png_returns_png_signature():
     assert image_bytes.startswith(b"\x89PNG\r\n\x1a\n")
 
 
+def test_generate_qr_png_supports_standard_quality():
+    image_bytes = generate_qr_png("https://example.com", quality="standard")
+    image = Image.open(io.BytesIO(image_bytes))
+
+    assert image.size == (330, 330)
+
+
+def test_generate_qr_png_supports_high_quality_by_default():
+    image_bytes = generate_qr_png("https://example.com")
+    image = Image.open(io.BytesIO(image_bytes))
+
+    assert image.size == (528, 528)
+
+
+def test_generate_qr_png_supports_very_high_quality():
+    image_bytes = generate_qr_png("https://example.com", quality="very_high")
+    image = Image.open(io.BytesIO(image_bytes))
+
+    assert image.size == (792, 792)
+
+
 def test_generate_qr_png_supports_custom_colors_and_shape():
     image_bytes = generate_qr_png(
         "https://example.com",
@@ -106,6 +127,11 @@ def test_generate_qr_png_rejects_low_contrast_colors():
 def test_generate_qr_png_rejects_unknown_shape():
     with pytest.raises(QRCodeRequestError):
         generate_qr_png("https://example.com", module_style="triangle")
+
+
+def test_generate_qr_png_rejects_unknown_quality():
+    with pytest.raises(QRCodeRequestError):
+        generate_qr_png("https://example.com", quality="ultra")
 
 
 def test_generate_qr_png_rejects_blank_text():

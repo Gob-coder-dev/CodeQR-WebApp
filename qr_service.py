@@ -23,6 +23,7 @@ DEFAULT_FILE_STEM: Final[str] = "qr-code"
 DEFAULT_FOREGROUND_COLOR: Final[str] = "#102033"
 DEFAULT_BACKGROUND_COLOR: Final[str] = "#ffffff"
 DEFAULT_MODULE_STYLE: Final[str] = "square"
+DEFAULT_QUALITY: Final[str] = "high"
 MAX_FILE_STEM_LENGTH: Final[int] = 80
 MAX_LOGO_BYTES: Final[int] = 2 * 1024 * 1024
 LOGO_IMAGE_RATIO: Final[float] = 0.22
@@ -38,6 +39,13 @@ MODULE_DRAWERS = {
     "gapped": lambda: GappedSquareModuleDrawer(size_ratio=0.82),
     "vertical": lambda: VerticalBarsDrawer(horizontal_shrink=0.82),
     "horizontal": lambda: HorizontalBarsDrawer(vertical_shrink=0.82),
+}
+
+QUALITY_BOX_SIZES = {
+    "low": 10,
+    "medium": 16,
+    "high": 24,
+    "very_high": 30,
 }
 
 
@@ -107,6 +115,18 @@ def build_module_drawer(module_style: str):
         raise QRCodeRequestError("Selected QR code shape is not supported.")
 
     return drawer_factory()
+
+
+def resolve_box_size(quality: str) -> int:
+    value = DEFAULT_QUALITY if quality is None else str(quality).strip().lower()
+    if not value:
+        value = DEFAULT_QUALITY
+
+    box_size = QUALITY_BOX_SIZES.get(value)
+    if box_size is None:
+        raise QRCodeRequestError("Selected QR code quality is not supported.")
+
+    return box_size
 
 
 def load_logo_image(logo_file: BinaryIO | None) -> Image.Image | None:
@@ -211,6 +231,7 @@ def generate_qr_png(
     foreground_color: str = DEFAULT_FOREGROUND_COLOR,
     background_color: str = DEFAULT_BACKGROUND_COLOR,
     module_style: str = DEFAULT_MODULE_STYLE,
+    quality: str = DEFAULT_QUALITY,
     logo_file: BinaryIO | None = None,
 ) -> bytes:
     value = "" if text is None else str(text).strip()
@@ -222,12 +243,13 @@ def generate_qr_png(
     if contrast_ratio(foreground, background) < 3:
         raise QRCodeRequestError("QR color and background color need more contrast.")
 
+    box_size = resolve_box_size(quality)
     logo = load_logo_image(logo_file)
     prepared_logo = None
     qr_code = qrcode.QRCode(
         version=None,
         error_correction=ERROR_CORRECT_H if logo else ERROR_CORRECT_M,
-        box_size=10,
+        box_size=box_size,
         border=4,
     )
     qr_code.add_data(value)

@@ -67,6 +67,7 @@ def create_app() -> Flask:
                 foreground_color=payload.get("foreground_color", ""),
                 background_color=payload.get("background_color", ""),
                 module_style=payload.get("module_style", ""),
+                quality=payload.get("quality", ""),
                 logo_file=logo_file,
             )
         except QRCodeRequestError as error:
