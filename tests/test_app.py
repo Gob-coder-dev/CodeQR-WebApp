@@ -23,6 +23,8 @@ def test_index_page_renders():
 
     assert response.status_code == 200
     assert b"Convertisseur QR" in response.data
+    assert b"QR code personnalis" in response.data
+    assert b"Logo central" in response.data
     assert b"foreground-color-hex" in response.data
     assert b"background-color-hex" in response.data
 
