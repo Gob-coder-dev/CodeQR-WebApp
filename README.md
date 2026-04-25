@@ -172,6 +172,10 @@ Advanced options include:
 
 The readability panel gives non-blocking warnings when settings may reduce scan reliability, such as low contrast, small margins, large logos, or transparent backgrounds with light QR colors.
 
+## Frontend Notes
+
+Small contextual surprises are grouped in `static/app.js` under the `delight` keyword. Search for `delightRules` if you need to adjust those hidden UI messages.
+
 ## API Endpoint
 
 The main generation endpoint is:

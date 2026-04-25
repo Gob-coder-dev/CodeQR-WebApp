@@ -55,6 +55,7 @@
                   placeholder="https://example.com ou votre texte"
                 ></textarea>
               </div>
+              <div id="content-delight" class="delight-message delight-message--inline" aria-live="polite" hidden></div>
             </div>
 
             <div id="qr-fields-wifi" class="qr-type-fields" data-qr-type-fields="wifi" hidden>
@@ -174,6 +175,7 @@
               maxlength="80"
               placeholder="mon-qr-code"
             >
+            <div id="filename-delight" class="delight-message delight-message--inline" aria-live="polite" hidden></div>
           </div>
 
           <details class="advanced-options">
@@ -320,6 +322,7 @@
                   >
                   <span>Fond transparent</span>
                 </label>
+                <div id="color-delight" class="delight-message delight-message--inline" aria-live="polite" hidden></div>
               </fieldset>
 
               <fieldset class="option-section option-section--shapes">
@@ -380,9 +383,12 @@
                 </div>
               </fieldset>
 
-              <button id="reset-options" class="secondary-button" type="button">
-                R&eacute;initialiser les options
-              </button>
+              <div class="reset-row">
+                <button id="reset-options" class="secondary-button" type="button">
+                  R&eacute;initialiser les options
+                </button>
+                <span id="reset-delight" class="reset-delight" hidden></span>
+              </div>
             </div>
           </details>
 

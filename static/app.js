@@ -32,6 +32,12 @@ const preview = document.querySelector("#preview");
 const previewImage = document.querySelector("#preview-image");
 const downloadButton = document.querySelector("#download-button");
 const copyButton = document.querySelector("#copy-button");
+const delightTargets = {
+  content: document.querySelector("#content-delight"),
+  filename: document.querySelector("#filename-delight"),
+  color: document.querySelector("#color-delight"),
+};
+const resetDelight = document.querySelector("#reset-delight");
 
 const defaultOptions = {
   foregroundColor: "#000000",
@@ -49,6 +55,8 @@ const defaultOptions = {
 };
 const maxLogoBytes = 2 * 1024 * 1024;
 const hexColorPattern = /^#[0-9a-fA-F]{6}$/;
+const ownSiteHost = "qr-code-converter.onrender.com";
+const resetBurstWindowMs = 10000;
 const contentRequirements = {
   text: {
     selector: "#text",
@@ -81,6 +89,18 @@ const contentRequirements = {
   },
 };
 let currentPreview = null;
+let resetClickCount = 0;
+let resetClickTimer = null;
+const transientDelights = {};
+
+const colorControls = new Set([
+  foregroundColorField,
+  foregroundHexField,
+  foregroundColor2Field,
+  foregroundHex2Field,
+  backgroundColorField,
+  backgroundHexField,
+]);
 
 function setStatus(message, type = "info") {
   statusBox.textContent = message;
@@ -128,6 +148,110 @@ function normalizeHexColor(value) {
   const prefixedValue = trimmedValue.startsWith("#") ? trimmedValue : `#${trimmedValue}`;
 
   return hexColorPattern.test(prefixedValue) ? prefixedValue.toUpperCase() : null;
+}
+
+function normalizeText(value) {
+  return (value || "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function normalizeFilename(value) {
+  const normalizedValue = normalizeText(value);
+  return normalizedValue.replace(/\.(png|svg)$/i, "");
+}
+
+function activeContentValue() {
+  return qrTypeField.value === "text" ? textField.value.trim() : "";
+}
+
+function parsePossibleUrl(value) {
+  const trimmedValue = (value || "").trim();
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const candidates = [trimmedValue];
+  if (trimmedValue.startsWith("/")) {
+    candidates.push(`https://${ownSiteHost}${trimmedValue}`);
+  }
+  if (/^(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(trimmedValue)) {
+    candidates.push(`http://${trimmedValue}`);
+  }
+
+  for (const candidate of candidates) {
+    try {
+      return new URL(candidate);
+    } catch (_error) {
+      // Keep trying lightweight URL normalizations.
+    }
+  }
+
+  return null;
+}
+
+function isRickrollUrl(content) {
+  const normalizedContent = normalizeText(content);
+  return normalizedContent.includes("dqw4w9wgxcq");
+}
+
+function isOwnSiteUrl(content) {
+  const url = parsePossibleUrl(content);
+  if (!url) {
+    return false;
+  }
+
+  const pathname = url.pathname.replace(/\/+$/, "") || "/";
+  return url.hostname === ownSiteHost && pathname === "/";
+}
+
+function isOwnHealthUrl(content) {
+  const normalizedContent = normalizeText(content);
+  const url = parsePossibleUrl(content);
+  const pathname = url?.pathname.replace(/\/+$/, "") || "";
+  return normalizedContent === "/health" || (url?.hostname === ownSiteHost && pathname === "/health");
+}
+
+function isLocalhostUrl(content) {
+  const url = parsePossibleUrl(content);
+  return ["localhost", "127.0.0.1", "::1"].includes(url?.hostname);
+}
+
+function isQrGoogleSearch(content) {
+  const url = parsePossibleUrl(content);
+  if (!url || !url.hostname.includes("google.") || url.pathname !== "/search") {
+    return false;
+  }
+
+  const query = normalizeText(url.searchParams.get("q") || "");
+  return query.includes("qr code") || query.includes("qrcode");
+}
+
+function currentColorValues() {
+  const colors = [
+    normalizeHexColor(foregroundHexField.value || foregroundColorField.value),
+  ];
+
+  if (usesGradientColor()) {
+    colors.push(normalizeHexColor(foregroundHex2Field.value || foregroundColor2Field.value));
+  }
+
+  if (!transparentBackgroundField.checked) {
+    colors.push(normalizeHexColor(backgroundHexField.value || backgroundColorField.value));
+  }
+
+  return colors.filter(Boolean);
+}
+
+function hasFrenchPalette() {
+  const colors = currentColorValues();
+  const hasWhite = colors.includes("#FFFFFF");
+  const hasRed = colors.some((color) => ["#FF0000", "#EF4135"].includes(color));
+  const hasBlue = colors.some((color) => ["#0000FF", "#0055A4"].includes(color));
+
+  return hasWhite && hasRed && hasBlue;
+}
+
+function isColorControl(control) {
+  return colorControls.has(control);
 }
 
 function syncHexFromPicker(colorField, hexField) {
@@ -217,6 +341,218 @@ function validateQrContent() {
   }
 
   return true;
+}
+
+// Contextual delights. Search "delight" to adjust these lightweight frontend-only rules.
+const delightRules = [
+  {
+    id: "rickroll-content",
+    priority: 100,
+    target: "content",
+    tone: "orange",
+    message: "Never gonna give you up...",
+    when: ({ content }) => isRickrollUrl(content),
+  },
+  {
+    id: "rickroll-filename",
+    priority: 100,
+    target: "filename",
+    tone: "orange",
+    message: "Never gonna give you up...",
+    when: ({ filename }) => filename === "rickroll",
+  },
+  {
+    id: "rickroll-filename-followup",
+    priority: 101,
+    target: "filename",
+    tone: "orange",
+    message: "Never gonna let you down...",
+    when: ({ content, filename }) => filename === "rickroll" && isRickrollUrl(content),
+  },
+  {
+    id: "health",
+    priority: 95,
+    target: "content",
+    tone: "badge",
+    message: "Le site respire encore. \u2665",
+    when: ({ content }) => isOwnHealthUrl(content),
+  },
+  {
+    id: "qrception",
+    priority: 90,
+    target: "content",
+    tone: "badge",
+    message: "QRception \u2665",
+    when: ({ content }) => isOwnSiteUrl(content),
+  },
+  {
+    id: "google-qr-search",
+    priority: 85,
+    target: "content",
+    tone: "subtle",
+    message: "Un QR code qui cherche un QR code ?",
+    when: ({ content }) => isQrGoogleSearch(content),
+  },
+  {
+    id: "localhost",
+    priority: 80,
+    target: "content",
+    tone: "red",
+    message: "Mode d\u00e9veloppeur d\u00e9tect\u00e9.",
+    when: ({ content }) => isLocalhostUrl(content),
+  },
+  {
+    id: "france-palette",
+    priority: 75,
+    target: "color",
+    tone: "france",
+    message: "\u00c7a c'est ma France ! Baguette ! Fromage !",
+    when: () => hasFrenchPalette(),
+  },
+  {
+    id: "hidden-qr",
+    priority: 70,
+    target: "color",
+    tone: "orange",
+    message: "Le QR code joue \u00e0 cache-cache ?",
+    when: ({ foregroundColor, backgroundColor }) =>
+      !transparentBackgroundField.checked &&
+      Boolean(foregroundColor) &&
+      Boolean(backgroundColor) &&
+      foregroundColor === backgroundColor,
+  },
+  {
+    id: "answer-42",
+    priority: 65,
+    target: "content",
+    tone: "badge",
+    message: "Mais oui ! C'est une super r\u00e9ponse !",
+    when: ({ normalizedContent }) => normalizedContent === "42",
+  },
+  {
+    id: "hello",
+    priority: 60,
+    target: "content",
+    tone: "subtle",
+    message: "Bonjour \u00e0 toi aussi.",
+    when: ({ normalizedContent }) => normalizedContent === "bonjour",
+  },
+  {
+    id: "secret-file",
+    priority: 55,
+    target: "filename",
+    tone: "subtle",
+    message: "un QRcode confidenciel ?",
+    when: ({ filename }) => filename === "secret",
+  },
+  {
+    id: "test-file",
+    priority: 50,
+    target: "filename",
+    tone: "red",
+    message: "Encore un test, comme toujours...",
+    when: ({ filename }) => filename === "test",
+  },
+  {
+    id: "default-file",
+    priority: 45,
+    target: "filename",
+    tone: "subtle",
+    message: "Original. Tr\u00e8s original.",
+    when: ({ filename }) => filename === "qr-code",
+  },
+];
+
+function buildDelightContext() {
+  const content = activeContentValue();
+
+  return {
+    content,
+    normalizedContent: normalizeText(content),
+    filename: normalizeFilename(filenameField.value),
+    foregroundColor: normalizeHexColor(foregroundHexField.value || foregroundColorField.value),
+    backgroundColor: normalizeHexColor(backgroundHexField.value || backgroundColorField.value),
+  };
+}
+
+function renderDelight(targetName, delight) {
+  const target = delightTargets[targetName];
+  if (!target) {
+    return;
+  }
+
+  if (!delight) {
+    target.hidden = true;
+    target.textContent = "";
+    target.removeAttribute("data-tone");
+    return;
+  }
+
+  target.textContent = delight.message;
+  target.dataset.tone = delight.tone || "subtle";
+  target.hidden = false;
+}
+
+function clearDelightTargets() {
+  Object.keys(delightTargets).forEach((targetName) => {
+    renderDelight(targetName, null);
+  });
+}
+
+function showTransientDelight(delight, duration = 4200) {
+  const targetName = delight.target || "content";
+  transientDelights[targetName] = {
+    ...delight,
+    target: targetName,
+    expiresAt: Date.now() + duration,
+  };
+  evaluateDelights();
+}
+
+function evaluateDelights() {
+  const context = buildDelightContext();
+  const delightsByTarget = {};
+
+  delightRules.forEach((rule) => {
+    if (!rule.when(context)) {
+      return;
+    }
+
+    const targetName = rule.target || "content";
+    const currentDelight = delightsByTarget[targetName];
+    if (!currentDelight || rule.priority > currentDelight.priority) {
+      delightsByTarget[targetName] = rule;
+    }
+  });
+
+  Object.entries(transientDelights).forEach(([targetName, delight]) => {
+    if (delight.expiresAt <= Date.now()) {
+      delete transientDelights[targetName];
+      return;
+    }
+
+    delightsByTarget[targetName] = delight;
+  });
+
+  clearDelightTargets();
+  Object.entries(delightsByTarget).forEach(([targetName, delight]) => {
+    renderDelight(targetName, delight);
+  });
+}
+
+function registerResetClick() {
+  resetClickCount += 1;
+  window.clearTimeout(resetClickTimer);
+  resetClickTimer = window.setTimeout(() => {
+    resetClickCount = 0;
+    resetDelight.hidden = true;
+    resetDelight.textContent = "";
+  }, resetBurstWindowMs);
+
+  if (resetClickCount >= 10) {
+    resetDelight.textContent = "Encore ? Le bouton commence \u00e0 te conna\u00eetre \u00e0 force.";
+    resetDelight.hidden = false;
+  }
 }
 
 function loadImage(url) {
@@ -385,11 +721,21 @@ function clearErrorStatus() {
   }
 }
 
-form.addEventListener("input", clearErrorStatus);
-form.addEventListener("change", clearErrorStatus);
+function handleFormActivity(event) {
+  clearErrorStatus();
+  if (isColorControl(event.target)) {
+    return;
+  }
+
+  evaluateDelights();
+}
+
+form.addEventListener("input", handleFormActivity);
+form.addEventListener("change", handleFormActivity);
 qrTypeField.addEventListener("change", () => {
   updateQrTypeFields();
   clearCurrentPreview();
+  evaluateDelights();
 });
 wifiSecurityField.addEventListener("change", updateQrTypeFields);
 foregroundColorField.addEventListener("input", () => {
@@ -401,15 +747,30 @@ foregroundColor2Field.addEventListener("input", () => {
 backgroundColorField.addEventListener("input", () => {
   syncHexFromPicker(backgroundColorField, backgroundHexField);
 });
+filenameField.addEventListener("input", () => {
+  evaluateDelights();
+});
 foregroundHexField.addEventListener("blur", () => {
   syncPickerFromHex(foregroundColorField, foregroundHexField);
+  evaluateDelights();
 });
 foregroundHex2Field.addEventListener("blur", () => {
   syncPickerFromHex(foregroundColor2Field, foregroundHex2Field);
+  evaluateDelights();
 });
 backgroundHexField.addEventListener("blur", () => {
   syncPickerFromHex(backgroundColorField, backgroundHexField);
+  evaluateDelights();
 });
+foregroundColorField.addEventListener("change", evaluateDelights);
+foregroundColor2Field.addEventListener("change", evaluateDelights);
+backgroundColorField.addEventListener("change", evaluateDelights);
+foregroundHexField.addEventListener("change", evaluateDelights);
+foregroundHex2Field.addEventListener("change", evaluateDelights);
+backgroundHexField.addEventListener("change", evaluateDelights);
+foregroundColorField.addEventListener("blur", evaluateDelights);
+foregroundColor2Field.addEventListener("blur", evaluateDelights);
+backgroundColorField.addEventListener("blur", evaluateDelights);
 logoSizeField.addEventListener("input", updateLogoSizeOutput);
 colorModeField.addEventListener("change", updateConditionalOptions);
 transparentBackgroundField.addEventListener("change", updateConditionalOptions);
@@ -420,7 +781,12 @@ downloadButton.addEventListener("click", () => {
   }
 });
 copyButton.addEventListener("click", copyCurrentPreview);
-resetOptionsButton.addEventListener("click", resetAdvancedOptions);
+resetOptionsButton.addEventListener("click", () => {
+  resetAdvancedOptions();
+  registerResetClick();
+  evaluateDelights();
+});
 updateQrTypeFields();
 updateLogoSizeOutput();
 updateConditionalOptions();
+evaluateDelights();

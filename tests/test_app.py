@@ -36,6 +36,10 @@ def test_index_page_renders():
     assert b"logo-size" in response.data
     assert b"error-correction" in response.data
     assert b"border-size" in response.data
+    assert b"content-delight" in response.data
+    assert b"filename-delight" in response.data
+    assert b"color-delight" in response.data
+    assert b"reset-delight" in response.data
 
 
 def test_qr_code_endpoint_returns_png_download():
