@@ -2,7 +2,7 @@
 
 A small Flask web app that generates customizable QR codes from links, text, Wi-Fi credentials, email, phone, SMS, contact cards, or locations.
 
-The app does not store user data. It renders a web page, accepts form input, generates the QR code on the server, and returns an image preview that can be downloaded or copied from the browser.
+The app does not store submitted QR code content. It renders a web page, accepts form input, generates the QR code on the server, and returns an image preview that can be downloaded or copied from the browser. If optional Supabase analytics are enabled, the app only stores minimal event counters such as `server_visit` and `qr_generated`.
 
 ## Features
 
@@ -37,6 +37,8 @@ The app does not store user data. It renders a web page, accepts form input, gen
 |-- app.py
 |-- bootstrap.py
 |-- Dockerfile
+|-- LICENSE
+|-- analytics.py
 |-- render.yaml
 |-- serve.py
 |-- qr_payload.py
@@ -71,6 +73,7 @@ The app does not store user data. It renders a web page, accepts form input, gen
 |       |-- preview.js
 |       `-- qr-api.js
 `-- tests/
+    |-- test_analytics.py
     |-- test_app.py
     |-- test_qr_payload.py
     `-- test_qr_service.py
@@ -261,6 +264,7 @@ Frontend behavior is split by responsibility:
 
 Backend QR generation is split by responsibility:
 
+- `analytics.py`: optional Supabase event tracking for server visits and successful QR generations.
 - `qr_code/options.py`: constants, request errors, option resolution, color validation, and file-name sanitization.
 - `qr_code/rendering.py`: module/eye drawing, color masks, logo preparation, and SVG shape helpers.
 - `qr_code/export.py`: PNG/SVG byte generation.
@@ -313,3 +317,11 @@ Because this is a web app, the browser controls where the file is saved:
 ```powershell
 pytest
 ```
+
+## License
+
+Copyright (c) 2026 Gob-coder-dev. All rights reserved.
+
+This project is proprietary. The source code is available for viewing only.
+Use, modification, distribution, sublicensing, sale, or commercial exploitation
+is not permitted without prior written permission.
