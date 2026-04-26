@@ -53,6 +53,10 @@ def test_index_page_renders():
     assert b'data-language="fr"' in response.data
     assert b'data-language="en"' in response.data
     assert b'data-language="es"' in response.data
+    assert b"flag--fr" in response.data
+    assert b"flag--gb" in response.data
+    assert b"flag--us" in response.data
+    assert b"flag--es" in response.data
 
 
 def test_qr_code_endpoint_returns_png_download():

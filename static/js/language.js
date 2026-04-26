@@ -1,9 +1,9 @@
 // Text resources for the QR converter frontend. Keep behavior in the feature modules.
 (function () {
   const qrSupportedLanguages = {
-    fr: { flag: "\u{1F1EB}\u{1F1F7}", code: "FR", label: "Fran\u00e7ais" },
-    en: { flag: "\u{1F1EC}\u{1F1E7}/\u{1F1FA}\u{1F1F8}", code: "EN", label: "English" },
-    es: { flag: "\u{1F1EA}\u{1F1F8}", code: "ES", label: "Espa\u00f1ol" },
+    fr: { flags: ["fr"], code: "FR", label: "Fran\u00e7ais" },
+    en: { flags: ["gb", "us"], code: "EN", label: "English" },
+    es: { flags: ["es"], code: "ES", label: "Espa\u00f1ol" },
   };
   const qrTranslations = {
     fr: {

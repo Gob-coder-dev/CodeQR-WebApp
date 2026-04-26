@@ -61,11 +61,22 @@
 
     function updateLanguageControls() {
       const language = supportedLanguages[currentLanguage];
-      elements.languageButtonFlag.textContent = language.flag;
+      renderFlags(elements.languageButtonFlag, language.flags);
       elements.languageButtonCode.textContent = language.code;
 
       elements.languageMenuButtons.forEach((button) => {
         button.setAttribute("aria-current", String(button.dataset.language === currentLanguage));
+      });
+    }
+
+    function renderFlags(container, flags) {
+      container.textContent = "";
+      container.classList.toggle("language-flag-slot--pair", flags.length > 1);
+
+      flags.forEach((flagName) => {
+        const flag = document.createElement("span");
+        flag.className = `flag flag--${flagName}`;
+        container.append(flag);
       });
     }
 

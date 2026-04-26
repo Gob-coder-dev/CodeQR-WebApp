@@ -22,13 +22,31 @@
         aria-label="Changer de langue"
         data-i18n-aria-label="language.button"
       >
-        <span id="language-button-flag" aria-hidden="true">🇫🇷</span>
+        <span id="language-button-flag" class="language-flag-slot" aria-hidden="true">
+          <span class="flag flag--fr"></span>
+        </span>
         <span id="language-button-code">FR</span>
       </button>
       <div id="language-menu" class="language-menu" hidden>
-        <button type="button" data-language="fr">🇫🇷 Français</button>
-        <button type="button" data-language="en">🇬🇧/🇺🇸 English</button>
-        <button type="button" data-language="es">🇪🇸 Español</button>
+        <button type="button" data-language="fr">
+          <span class="language-flag-slot" aria-hidden="true">
+            <span class="flag flag--fr"></span>
+          </span>
+          <span>Fran&ccedil;ais</span>
+        </button>
+        <button type="button" data-language="en">
+          <span class="language-flag-slot language-flag-slot--pair" aria-hidden="true">
+            <span class="flag flag--gb"></span>
+            <span class="flag flag--us"></span>
+          </span>
+          <span>English</span>
+        </button>
+        <button type="button" data-language="es">
+          <span class="language-flag-slot" aria-hidden="true">
+            <span class="flag flag--es"></span>
+          </span>
+          <span>Espa&ntilde;ol</span>
+        </button>
       </div>
     </div>
 
