@@ -28,6 +28,7 @@ The app does not store user data. It renders a web page, accepts form input, gen
 - `qrcode` + Pillow to generate PNG and SVG QR codes
 - Waitress for production serving
 - Docker for deployment packaging
+- GoatCounter and optional Supabase events for lightweight usage analytics
 
 ## Project Structure
 
@@ -159,6 +160,58 @@ This repository now includes:
 4. Use `/health` as the health check path.
 
 If you use the included `render.yaml`, Render can read the service definition directly from the repo root.
+
+### Optional Analytics
+
+GoatCounter can be added in `templates/index.html` for basic page-view analytics.
+
+For minimal server-side counters, create this Supabase table:
+
+```sql
+create table public.analytics_events (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  event_name text not null check (
+    event_name in ('server_visit', 'qr_generated')
+  )
+);
+
+alter table public.analytics_events enable row level security;
+
+create index analytics_events_created_at_idx
+on public.analytics_events (created_at desc);
+
+create index analytics_events_event_name_idx
+on public.analytics_events (event_name);
+```
+
+Then add these Render environment variables:
+
+```text
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_SECRET_KEY=sb_secret_xxxxx
+ANALYTICS_ENABLED=true
+```
+
+The secret key must stay server-side only. When enabled, the app records one `server_visit` event for `/` and one `qr_generated` event after a successful `/api/qr-code` generation.
+
+Useful Supabase queries:
+
+```sql
+select event_name, count(*) as total
+from public.analytics_events
+group by event_name;
+```
+
+```sql
+select
+  date_trunc('day', created_at)::date as day,
+  event_name,
+  count(*) as total
+from public.analytics_events
+group by day, event_name
+order by day desc;
+```
 
 ## Usage
 

@@ -13,6 +13,7 @@ ensure_project_interpreter()
 from flask import Flask, jsonify, render_template, request, send_file
 from werkzeug.exceptions import RequestEntityTooLarge
 
+from analytics import track_event
 from qr_code.payload import build_qr_payload
 from qr_code.service import QRCodeRequestError, build_download_name, generate_qr_file
 
@@ -37,6 +38,7 @@ def create_app() -> Flask:
 
     @app.get("/")
     def index() -> str:
+        track_event("server_visit")
         return render_template("index.html")
 
     @app.get("/health")
@@ -82,6 +84,7 @@ def create_app() -> Flask:
         except QRCodeRequestError as error:
             return jsonify({"error": str(error)}), HTTPStatus.BAD_REQUEST
 
+        track_event("qr_generated")
         return send_file(
             io.BytesIO(image_bytes),
             mimetype=mimetype,
