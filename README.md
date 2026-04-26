@@ -28,7 +28,7 @@ The app does not store user data. It renders a web page, accepts form input, gen
 - `qrcode` + Pillow to generate PNG and SVG QR codes
 - Waitress for production serving
 - Docker for deployment packaging
-- GoatCounter and optional Supabase events for lightweight usage analytics
+- optional Supabase events for lightweight usage analytics
 
 ## Project Structure
 
@@ -162,8 +162,6 @@ This repository now includes:
 If you use the included `render.yaml`, Render can read the service definition directly from the repo root.
 
 ### Optional Analytics
-
-GoatCounter can be added in `templates/index.html` for basic page-view analytics.
 
 For minimal server-side counters, create this Supabase table:
 
