@@ -7,7 +7,7 @@
   };
   const qrTranslations = {
     fr: {
-      "meta.title": "Convertisseur de lien en QR code",
+      "meta.title": "QR Code personnalis\u00e9",
       "meta.description": "Cr\u00e9ez des QR codes PNG ou SVG pour liens, Wi-Fi, email, t\u00e9l\u00e9phone, SMS, contact et localisation, avec couleurs, formes, logo, correction d'erreur et marge personnalisables.",
       "language.button": "Changer de langue",
       "hero.eyebrow": "Convertisseur QR",
@@ -279,7 +279,7 @@
       "delight.helldivers": "FOR SUPER EAAAAAAARTH !!!!!!!",
     },
     es: {
-      "meta.title": "Convertidor de enlaces a c\u00f3digo QR",
+      "meta.title": "Convertidor QR",
       "meta.description": "Crea c\u00f3digos QR PNG o SVG para enlaces, Wi-Fi, email, tel\u00e9fono, SMS, contactos y ubicaciones, con colores, formas, logo, correcci\u00f3n de errores y margen personalizables.",
       "language.button": "Cambiar idioma",
       "hero.eyebrow": "Convertidor QR",
