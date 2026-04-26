@@ -71,6 +71,59 @@
       return query.includes("qr code") || query.includes("qrcode");
     }
 
+    function normalizeSearchText(value) {
+      return formOptions
+        .normalizeText(value)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function normalizePhrase(value) {
+      return normalizeSearchText(value)
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+    }
+
+    function isTeamPepsUrl(content) {
+      const url = parsePossibleUrl(content);
+      if (!url || url.protocol !== "https:") {
+        return false;
+      }
+
+      const pathname = url.pathname.replace(/\/+$/, "") || "/";
+      if (url.hostname === "teampeps.fr" && pathname === "/") {
+        return true;
+      }
+
+      return url.hostname === "liquipedia.net" && pathname.toLowerCase() === "/overwatch/team_peps";
+    }
+
+    function isClairObscurContact({ qrType, contactFirstName, contactOrganization }) {
+      if (qrType !== "contact" || normalizeSearchText(contactFirstName) !== "francois") {
+        return false;
+      }
+
+      return [
+        "clair obscur expedition 33",
+        "clair obscur",
+        "expedition 33",
+      ].includes(normalizePhrase(contactOrganization));
+    }
+
+    function isHelldiversWifi({ qrType, wifiSsid, wifiPassword }) {
+      if (qrType !== "wifi") {
+        return false;
+      }
+
+      const normalizedSsid = normalizeSearchText(wifiSsid);
+      const normalizedPassword = normalizeSearchText(wifiPassword);
+      return (
+        ["liber-tea", "a cup of liber-tea"].includes(normalizedSsid) &&
+        (wifiPassword.trim() === "\u2191\u2192\u2193\u2193\u2193" ||
+          normalizedPassword === "up right down down down")
+      );
+    }
+
     const delightRules = [
       {
         id: "rickroll-content",
@@ -121,6 +174,14 @@
         when: ({ content }) => isQrGoogleSearch(content),
       },
       {
+        id: "team-peps",
+        priority: 84,
+        target: "content",
+        tone: "gold",
+        messageKey: "delight.teamPeps",
+        when: ({ qrType, content }) => qrType === "text" && isTeamPepsUrl(content),
+      },
+      {
         id: "localhost",
         priority: 80,
         target: "content",
@@ -143,6 +204,22 @@
         tone: "orange",
         messageKey: "delight.hiddenQr",
         when: () => colorUtils.foregroundMatchesBackground(),
+      },
+      {
+        id: "clair-obscur",
+        priority: 70,
+        target: "contact",
+        tone: "orange",
+        messageKey: "delight.clairObscur",
+        when: (context) => isClairObscurContact(context),
+      },
+      {
+        id: "helldivers",
+        priority: 70,
+        target: "wifi",
+        tone: "dark",
+        messageKey: "delight.helldivers",
+        when: (context) => isHelldiversWifi(context),
       },
       {
         id: "answer-42",
@@ -190,9 +267,14 @@
       const content = formOptions.activeContentValue();
 
       return {
+        qrType: elements.qrTypeField.value,
         content,
         normalizedContent: formOptions.normalizeText(content),
         filename: formOptions.normalizeFilename(elements.filenameField.value),
+        contactFirstName: elements.contactFirstNameField?.value || "",
+        contactOrganization: elements.contactOrgField?.value || "",
+        wifiSsid: elements.wifiSsidField?.value || "",
+        wifiPassword: elements.wifiPasswordField?.value || "",
         foregroundColor: colorUtils.normalizeHexColor(
           elements.foregroundHexField.value || elements.foregroundColorField.value,
         ),

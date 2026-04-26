@@ -138,6 +138,9 @@
       "delight.test": "Encore un test, comme toujours...",
       "delight.defaultFile": "Original. Tr\u00e8s original.",
       "delight.reset": "Encore ? Le bouton commence \u00e0 te conna\u00eetre \u00e0 force.",
+      "delight.clairObscur": "Ha, ha, ha, ha, ha ! Fran\u00e7ois, qu'est-ce que tu as pris cher !",
+      "delight.teamPeps": "Let's go team Peps !",
+      "delight.helldivers": "FOR SUPER EAAAAAAARTH !!!!!!!",
     },
     en: {
       "meta.title": "QR Code Converter",
@@ -271,6 +274,9 @@
       "delight.test": "Another test, as always...",
       "delight.defaultFile": "Original. Very original.",
       "delight.reset": "Again ? The button is starting to know you.",
+      "delight.clairObscur": "Hahahaha, ahh, Fran\u00e7ois you got smashed.",
+      "delight.teamPeps": "Let's go team Peps !",
+      "delight.helldivers": "FOR SUPER EAAAAAAARTH !!!!!!!",
     },
     es: {
       "meta.title": "Convertidor de enlaces a c\u00f3digo QR",
@@ -404,6 +410,9 @@
       "delight.test": "Otra prueba, como siempre...",
       "delight.defaultFile": "Original. Muy original.",
       "delight.reset": "\u00bf Otra vez ? El bot\u00f3n empieza a conocerte.",
+      "delight.clairObscur": "Ja, ja, ja... Fran\u00e7ois, te han machacado.",
+      "delight.teamPeps": "Let's go team Peps !",
+      "delight.helldivers": "FOR SUPER EAAAAAAARTH !!!!!!!",
     },
   };
 

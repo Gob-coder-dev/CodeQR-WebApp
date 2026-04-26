@@ -40,6 +40,8 @@ def test_index_page_renders():
     assert b"error-correction" in response.data
     assert b"border-size" in response.data
     assert b"content-delight" in response.data
+    assert b"contact-delight" in response.data
+    assert b"wifi-delight" in response.data
     assert b"filename-delight" in response.data
     assert b"color-delight" in response.data
     assert b"reset-delight" in response.data

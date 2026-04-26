@@ -44,6 +44,18 @@
   color: var(--danger);
 }
 
+.delight-message[data-tone="gold"] {
+  border-color: rgba(179, 122, 0, 0.7);
+  background: rgba(245, 190, 67, 0.18);
+  color: #8a5a00;
+}
+
+.delight-message[data-tone="dark"] {
+  border-color: rgba(31, 41, 55, 0.44);
+  background: rgba(31, 41, 55, 0.1);
+  color: #1f2937;
+}
+
 .delight-message[data-tone="france"] {
   border-color: rgba(32, 83, 164, 0.58);
   background: linear-gradient(
