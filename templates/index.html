@@ -11,18 +11,39 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
+    <div class="language-switcher">
+      <button
+        id="language-button"
+        class="language-button"
+        type="button"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-controls="language-menu"
+        aria-label="Changer de langue"
+        data-i18n-aria-label="language.button"
+      >
+        <span id="language-button-flag" aria-hidden="true">🇫🇷</span>
+        <span id="language-button-code">FR</span>
+      </button>
+      <div id="language-menu" class="language-menu" hidden>
+        <button type="button" data-language="fr">🇫🇷 Français</button>
+        <button type="button" data-language="en">🇬🇧/🇺🇸 English</button>
+        <button type="button" data-language="es">🇪🇸 Español</button>
+      </div>
+    </div>
+
     <main class="layout">
       <section class="hero">
-        <p class="eyebrow">Convertisseur QR</p>
-        <h1>Cr&eacute;ez un QR code personnalis&eacute;.</h1>
-        <p class="lede">
+        <p class="eyebrow" data-i18n="hero.eyebrow">Convertisseur QR</p>
+        <h1 data-i18n="hero.title">Cr&eacute;ez un QR code personnalis&eacute;.</h1>
+        <p class="lede" data-i18n="hero.lede">
           G&eacute;n&eacute;rez un QR code pour un lien, un Wi-Fi, un email, un contact ou une localisation, puis ajustez son style avant de le t&eacute;l&eacute;charger ou de le copier.
         </p>
-        <div class="hero-card" aria-label="Fonctionnalit&eacute;s principales">
+        <div class="hero-card" aria-label="Fonctionnalit&eacute;s principales" data-i18n-aria-label="hero.featuresAria">
           <ul class="feature-list">
-            <li>QR codes pour liens, Wi-Fi, email, t&eacute;l&eacute;phone, SMS, contact et localisation</li>
-            <li>Export PNG ou SVG avec aper&ccedil;u avant t&eacute;l&eacute;chargement</li>
-            <li>Couleurs, formes, logo, correction d'erreur et marge personnalisables</li>
+            <li data-i18n="hero.featureTypes">QR codes pour liens, Wi-Fi, email, t&eacute;l&eacute;phone, SMS, contact et localisation</li>
+            <li data-i18n="hero.featureExport">Export PNG ou SVG avec aper&ccedil;u avant t&eacute;l&eacute;chargement</li>
+            <li data-i18n="hero.featureOptions">Couleurs, formes, logo, correction d'erreur et marge personnalisables</li>
           </ul>
         </div>
       </section>
@@ -30,29 +51,30 @@
       <section class="panel">
         <form id="qr-form" class="form" enctype="multipart/form-data" novalidate>
           <fieldset class="content-section">
-            <legend>Contenu</legend>
+            <legend data-i18n="content.legend">Contenu</legend>
 
             <div class="field">
-              <label for="qr-type">Type de QR code</label>
+              <label for="qr-type" data-i18n="content.typeLabel">Type de QR code</label>
               <select id="qr-type" name="qr_type">
-                <option value="text" selected>Lien ou texte</option>
+                <option value="text" selected data-i18n="content.typeText">Lien ou texte</option>
                 <option value="wifi">Wi-Fi</option>
                 <option value="email">Email</option>
-                <option value="phone">T&eacute;l&eacute;phone</option>
+                <option value="phone" data-i18n="content.typePhone">T&eacute;l&eacute;phone</option>
                 <option value="sms">SMS</option>
                 <option value="contact">Contact</option>
-                <option value="location">Localisation</option>
+                <option value="location" data-i18n="content.typeLocation">Localisation</option>
               </select>
             </div>
 
             <div id="qr-fields-text" class="qr-type-fields" data-qr-type-fields="text">
               <div class="field">
-                <label for="text">Lien ou texte</label>
+                <label for="text" data-i18n="content.textLabel">Lien ou texte</label>
                 <textarea
                   id="text"
                   name="text"
                   rows="6"
                   placeholder="https://example.com ou votre texte"
+                  data-i18n-placeholder="content.textPlaceholder"
                 ></textarea>
               </div>
               <div id="content-delight" class="delight-message delight-message--inline" aria-live="polite" hidden></div>
@@ -61,63 +83,63 @@
             <div id="qr-fields-wifi" class="qr-type-fields" data-qr-type-fields="wifi" hidden>
               <div class="option-grid">
                 <div class="field">
-                  <label for="wifi-ssid">Nom du r&eacute;seau</label>
+                  <label for="wifi-ssid" data-i18n="wifi.ssid">Nom du r&eacute;seau</label>
                   <input id="wifi-ssid" name="wifi_ssid" type="text" disabled>
                 </div>
 
                 <div class="field">
-                  <label for="wifi-security">S&eacute;curit&eacute;</label>
+                  <label for="wifi-security" data-i18n="wifi.security">S&eacute;curit&eacute;</label>
                   <select id="wifi-security" name="wifi_security" disabled>
                     <option value="WPA" selected>WPA/WPA2</option>
                     <option value="WEP">WEP</option>
-                    <option value="nopass">Aucune</option>
+                    <option value="nopass" data-i18n="wifi.noSecurity">Aucune</option>
                   </select>
                 </div>
 
                 <div id="wifi-password-field" class="field">
-                  <label for="wifi-password">Mot de passe</label>
+                  <label for="wifi-password" data-i18n="wifi.password">Mot de passe</label>
                   <input id="wifi-password" name="wifi_password" type="text" autocomplete="off" disabled>
                 </div>
               </div>
 
               <label class="checkbox-field" for="wifi-hidden">
                 <input id="wifi-hidden" name="wifi_hidden" type="checkbox" disabled>
-                <span>R&eacute;seau masqu&eacute;</span>
+                <span data-i18n="wifi.hidden">R&eacute;seau masqu&eacute;</span>
               </label>
             </div>
 
             <div id="qr-fields-email" class="qr-type-fields" data-qr-type-fields="email" hidden>
               <div class="field">
-                <label for="email-to">Destinataire</label>
+                <label for="email-to" data-i18n="email.to">Destinataire</label>
                 <input id="email-to" name="email_to" type="email" placeholder="contact@example.com" disabled>
               </div>
 
               <div class="field">
-                <label for="email-subject">Sujet</label>
+                <label for="email-subject" data-i18n="email.subject">Sujet</label>
                 <input id="email-subject" name="email_subject" type="text" disabled>
               </div>
 
               <div class="field">
-                <label for="email-body">Message</label>
+                <label for="email-body" data-i18n="email.body">Message</label>
                 <textarea id="email-body" name="email_body" rows="4" disabled></textarea>
               </div>
             </div>
 
             <div id="qr-fields-phone" class="qr-type-fields" data-qr-type-fields="phone" hidden>
               <div class="field">
-                <label for="phone-number">Num&eacute;ro de t&eacute;l&eacute;phone</label>
+                <label for="phone-number" data-i18n="phone.number">Num&eacute;ro de t&eacute;l&eacute;phone</label>
                 <input id="phone-number" name="phone_number" type="tel" placeholder="+33612345678" disabled>
               </div>
             </div>
 
             <div id="qr-fields-sms" class="qr-type-fields" data-qr-type-fields="sms" hidden>
               <div class="field">
-                <label for="sms-number">Num&eacute;ro de t&eacute;l&eacute;phone</label>
+                <label for="sms-number" data-i18n="sms.number">Num&eacute;ro de t&eacute;l&eacute;phone</label>
                 <input id="sms-number" name="sms_number" type="tel" placeholder="+33612345678" disabled>
               </div>
 
               <div class="field">
-                <label for="sms-message">Message</label>
+                <label for="sms-message" data-i18n="sms.message">Message</label>
                 <textarea id="sms-message" name="sms_message" rows="4" disabled></textarea>
               </div>
             </div>
@@ -125,17 +147,17 @@
             <div id="qr-fields-contact" class="qr-type-fields" data-qr-type-fields="contact" hidden>
               <div class="option-grid">
                 <div class="field">
-                  <label for="contact-name">Nom complet</label>
+                  <label for="contact-name" data-i18n="contact.name">Nom complet</label>
                   <input id="contact-name" name="contact_name" type="text" disabled>
                 </div>
 
                 <div class="field">
-                  <label for="contact-org">Entreprise</label>
+                  <label for="contact-org" data-i18n="contact.org">Entreprise</label>
                   <input id="contact-org" name="contact_org" type="text" disabled>
                 </div>
 
                 <div class="field">
-                  <label for="contact-phone">T&eacute;l&eacute;phone</label>
+                  <label for="contact-phone" data-i18n="contact.phone">T&eacute;l&eacute;phone</label>
                   <input id="contact-phone" name="contact_phone" type="tel" disabled>
                 </div>
 
@@ -145,7 +167,7 @@
                 </div>
 
                 <div class="field">
-                  <label for="contact-url">Site web</label>
+                  <label for="contact-url" data-i18n="contact.url">Site web</label>
                   <input id="contact-url" name="contact_url" type="url" disabled>
                 </div>
               </div>
@@ -167,29 +189,30 @@
           </fieldset>
 
           <div class="field">
-            <label for="filename">Nom du fichier</label>
+            <label for="filename" data-i18n="file.label">Nom du fichier</label>
             <input
               id="filename"
               name="filename"
               type="text"
               maxlength="80"
               placeholder="mon-qr-code"
+              data-i18n-placeholder="file.placeholder"
             >
             <div id="filename-delight" class="delight-message delight-message--inline" aria-live="polite" hidden></div>
           </div>
 
           <details class="advanced-options">
             <summary>
-              <span>Options avanc&eacute;es</span>
+              <span data-i18n="advanced.summary">Options avanc&eacute;es</span>
             </summary>
 
             <div class="advanced-content">
               <fieldset class="option-section option-section--format">
-                <legend>Format et qualit&eacute;</legend>
+                <legend data-i18n="advanced.formatLegend">Format et qualit&eacute;</legend>
 
                 <div class="option-grid">
                   <div class="field">
-                    <label for="output-format">Format du fichier</label>
+                    <label for="output-format" data-i18n="advanced.outputFormat">Format du fichier</label>
                     <select id="output-format" name="output_format">
                       <option value="png" selected>PNG</option>
                       <option value="svg">SVG</option>
@@ -197,53 +220,53 @@
                   </div>
 
                   <div class="field">
-                    <label for="quality">Qualit&eacute; de r&eacute;solution</label>
+                    <label for="quality" data-i18n="advanced.quality">Qualit&eacute; de r&eacute;solution</label>
                     <select id="quality" name="quality">
-                      <option value="low">Bas</option>
-                      <option value="medium" selected>Standard</option>
-                      <option value="high">Haute</option>
-                      <option value="very_high">Tr&egrave;s haute</option>
+                      <option value="low" data-i18n="quality.low">Bas</option>
+                      <option value="medium" selected data-i18n="quality.medium">Standard</option>
+                      <option value="high" data-i18n="quality.high">Haute</option>
+                      <option value="very_high" data-i18n="quality.veryHigh">Tr&egrave;s haute</option>
                     </select>
                   </div>
 
                   <div class="field">
-                    <label for="error-correction">Correction d'erreur</label>
+                    <label for="error-correction" data-i18n="advanced.errorCorrection">Correction d'erreur</label>
                     <select id="error-correction" name="error_correction">
-                      <option value="low">Basse</option>
-                      <option value="medium" selected>Standard</option>
-                      <option value="quartile">Haute</option>
-                      <option value="high">Maximale</option>
+                      <option value="low" data-i18n="errorCorrection.low">Basse</option>
+                      <option value="medium" selected data-i18n="errorCorrection.medium">Standard</option>
+                      <option value="quartile" data-i18n="errorCorrection.quartile">Haute</option>
+                      <option value="high" data-i18n="errorCorrection.high">Maximale</option>
                     </select>
                   </div>
 
                   <div class="field">
-                    <label for="border-size">Marge autour du QR code</label>
+                    <label for="border-size" data-i18n="advanced.border">Marge autour du QR code</label>
                     <select id="border-size" name="border_size">
-                      <option value="small">Petite</option>
-                      <option value="standard" selected>Standard</option>
-                      <option value="large">Large</option>
+                      <option value="small" data-i18n="border.small">Petite</option>
+                      <option value="standard" selected data-i18n="border.standard">Standard</option>
+                      <option value="large" data-i18n="border.large">Large</option>
                     </select>
                   </div>
                 </div>
               </fieldset>
 
               <fieldset class="option-section option-section--colors">
-                <legend>Couleurs</legend>
+                <legend data-i18n="colors.legend">Couleurs</legend>
 
                 <div class="field">
-                  <label for="color-mode">Mode de couleur</label>
+                  <label for="color-mode" data-i18n="colors.mode">Mode de couleur</label>
                   <select id="color-mode" name="color_mode">
-                    <option value="solid" selected>Couleur unie</option>
-                    <option value="horizontal">D&eacute;grad&eacute; horizontal</option>
-                    <option value="vertical">D&eacute;grad&eacute; vertical</option>
-                    <option value="radial">D&eacute;grad&eacute; radial</option>
-                    <option value="square">D&eacute;grad&eacute; carr&eacute;</option>
+                    <option value="solid" selected data-i18n="colorMode.solid">Couleur unie</option>
+                    <option value="horizontal" data-i18n="colorMode.horizontal">D&eacute;grad&eacute; horizontal</option>
+                    <option value="vertical" data-i18n="colorMode.vertical">D&eacute;grad&eacute; vertical</option>
+                    <option value="radial" data-i18n="colorMode.radial">D&eacute;grad&eacute; radial</option>
+                    <option value="square" data-i18n="colorMode.square">D&eacute;grad&eacute; carr&eacute;</option>
                   </select>
                 </div>
 
                 <div class="option-grid">
                   <div class="field color-field">
-                    <label for="foreground-color">Couleur du QR code</label>
+                    <label for="foreground-color" data-i18n="colors.foreground">Couleur du QR code</label>
                     <div class="color-control">
                       <input
                         id="foreground-color"
@@ -259,6 +282,7 @@
                         maxlength="7"
                         pattern="#[0-9a-fA-F]{6}"
                         aria-label="Code hexad&eacute;cimal de la couleur du QR code"
+                        data-i18n-aria-label="colors.foregroundHexAria"
                         autocomplete="off"
                         spellcheck="false"
                       >
@@ -266,7 +290,7 @@
                   </div>
 
                   <div id="secondary-color-field" class="field color-field" hidden>
-                    <label for="foreground-color-2">Couleur secondaire du QR code</label>
+                    <label for="foreground-color-2" data-i18n="colors.secondary">Couleur secondaire du QR code</label>
                     <div class="color-control">
                       <input
                         id="foreground-color-2"
@@ -283,6 +307,7 @@
                         maxlength="7"
                         pattern="#[0-9a-fA-F]{6}"
                         aria-label="Code hexad&eacute;cimal de la couleur secondaire"
+                        data-i18n-aria-label="colors.secondaryHexAria"
                         autocomplete="off"
                         spellcheck="false"
                         disabled
@@ -291,7 +316,7 @@
                   </div>
 
                   <div id="background-color-field" class="field color-field">
-                    <label for="background-color">Couleur du fond</label>
+                    <label for="background-color" data-i18n="colors.background">Couleur du fond</label>
                     <div class="color-control">
                       <input
                         id="background-color"
@@ -307,6 +332,7 @@
                         maxlength="7"
                         pattern="#[0-9a-fA-F]{6}"
                         aria-label="Code hexad&eacute;cimal de la couleur du fond"
+                        data-i18n-aria-label="colors.backgroundHexAria"
                         autocomplete="off"
                         spellcheck="false"
                       >
@@ -320,55 +346,55 @@
                     name="transparent_background"
                     type="checkbox"
                   >
-                  <span>Fond transparent</span>
+                  <span data-i18n="colors.transparent">Fond transparent</span>
                 </label>
                 <div id="color-delight" class="delight-message delight-message--inline" aria-live="polite" hidden></div>
               </fieldset>
 
               <fieldset class="option-section option-section--shapes">
-                <legend>Formes</legend>
+                <legend data-i18n="shapes.legend">Formes</legend>
 
                 <div class="option-grid">
                   <div class="field">
-                    <label for="module-style">Forme des modules</label>
+                    <label for="module-style" data-i18n="shapes.modules">Forme des modules</label>
                     <select id="module-style" name="module_style">
-                      <option value="square" selected>Classique</option>
-                      <option value="rounded">Arrondi</option>
-                      <option value="circle">Points</option>
-                      <option value="gapped">Espac&eacute;</option>
-                      <option value="vertical">Barres verticales</option>
-                      <option value="horizontal">Barres horizontales</option>
+                      <option value="square" selected data-i18n="module.square">Classique</option>
+                      <option value="rounded" data-i18n="module.rounded">Arrondi</option>
+                      <option value="circle" data-i18n="module.circle">Points</option>
+                      <option value="gapped" data-i18n="module.gapped">Espac&eacute;</option>
+                      <option value="vertical" data-i18n="module.vertical">Barres verticales</option>
+                      <option value="horizontal" data-i18n="module.horizontal">Barres horizontales</option>
                     </select>
                   </div>
 
                   <div class="field">
-                    <label for="eye-style">Style des yeux</label>
+                    <label for="eye-style" data-i18n="shapes.eyes">Style des yeux</label>
                     <select id="eye-style" name="eye_style">
-                      <option value="square">Classique</option>
-                      <option value="rounded">Arrondi</option>
-                      <option value="circle">Points</option>
-                      <option value="match" selected>Identique aux modules</option>
+                      <option value="square" data-i18n="module.square">Classique</option>
+                      <option value="rounded" data-i18n="module.rounded">Arrondi</option>
+                      <option value="circle" data-i18n="module.circle">Points</option>
+                      <option value="match" selected data-i18n="module.match">Identique aux modules</option>
                     </select>
                   </div>
                 </div>
               </fieldset>
 
               <fieldset class="option-section option-section--logo">
-                <legend>Logo</legend>
+                <legend data-i18n="logo.legend">Logo</legend>
 
                 <div class="field">
-                  <label for="logo">Logo central</label>
+                  <label for="logo" data-i18n="logo.label">Logo central</label>
                   <input
                     id="logo"
                     name="logo"
                     type="file"
                     accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
                   >
-                  <p class="hint">PNG transparent conseill&eacute;. Les modules sous le logo sont nettoy&eacute;s.</p>
+                  <p class="hint" data-i18n="logo.hint">PNG transparent conseill&eacute;. Les modules sous le logo sont nettoy&eacute;s.</p>
                 </div>
 
                 <div id="logo-size-field" class="field range-field" hidden>
-                  <label for="logo-size">Taille du logo</label>
+                  <label for="logo-size" data-i18n="logo.size">Taille du logo</label>
                   <input
                     id="logo-size"
                     name="logo_size"
@@ -385,7 +411,7 @@
 
               <div class="reset-row">
                 <button id="reset-options" class="secondary-button" type="button">
-                  R&eacute;initialiser les options
+                  <span data-i18n="buttons.reset">R&eacute;initialiser les options</span>
                 </button>
                 <span id="reset-delight" class="reset-delight" hidden></span>
               </div>
@@ -393,30 +419,35 @@
           </details>
 
           <button id="submit-button" class="button" type="submit">
-            G&eacute;n&eacute;rer un aper&ccedil;u
+            <span data-i18n="buttons.generate">G&eacute;n&eacute;rer un aper&ccedil;u</span>
           </button>
         </form>
 
         <div id="preview" class="preview" hidden>
           <div class="preview-frame">
-            <img id="preview-image" alt="Aper&ccedil;u du QR code g&eacute;n&eacute;r&eacute;">
+            <img
+              id="preview-image"
+              alt="Aper&ccedil;u du QR code g&eacute;n&eacute;r&eacute;"
+              data-i18n-alt="preview.alt"
+            >
           </div>
           <div class="preview-actions">
             <button id="download-button" class="preview-button preview-button--download" type="button" disabled>
-              T&eacute;l&eacute;charger
+              <span data-i18n="buttons.download">T&eacute;l&eacute;charger</span>
             </button>
             <button id="copy-button" class="preview-button preview-button--copy" type="button" disabled>
-              Copier l'image
+              <span data-i18n="buttons.copy">Copier l'image</span>
             </button>
           </div>
         </div>
 
-        <div id="status" class="status" aria-live="polite">
+        <div id="status" class="status" aria-live="polite" data-i18n="status.initial">
           G&eacute;n&eacute;rez un aper&ccedil;u, puis t&eacute;l&eacute;chargez ou copiez le QR code.
         </div>
       </section>
     </main>
 
+    <script src="{{ url_for('static', filename='language.js') }}" defer></script>
     <script src="{{ url_for('static', filename='app.js') }}" defer></script>
   </body>
 </html>

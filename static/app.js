@@ -1,6 +1,11 @@
 const form = document.querySelector("#qr-form");
 const submitButton = document.querySelector("#submit-button");
 const statusBox = document.querySelector("#status");
+const languageButton = document.querySelector("#language-button");
+const languageButtonFlag = document.querySelector("#language-button-flag");
+const languageButtonCode = document.querySelector("#language-button-code");
+const languageMenu = document.querySelector("#language-menu");
+const languageMenuButtons = document.querySelectorAll("[data-language]");
 const qrTypeField = document.querySelector("#qr-type");
 const qrTypeFieldGroups = document.querySelectorAll("[data-qr-type-fields]");
 const textField = document.querySelector("#text");
@@ -39,6 +44,15 @@ const delightTargets = {
 };
 const resetDelight = document.querySelector("#reset-delight");
 
+const languageStorageKey = "qr_language";
+const languageConfig = window.qrLanguageConfig;
+if (!languageConfig) {
+  throw new Error("Missing language configuration. Load language.js before app.js.");
+}
+const { supportedLanguages, translations } = languageConfig;
+let currentLanguage = "en";
+let lastStatus = null;
+
 const defaultOptions = {
   foregroundColor: "#000000",
   foregroundColor2: "#0f766e",
@@ -60,32 +74,32 @@ const resetBurstWindowMs = 10000;
 const contentRequirements = {
   text: {
     selector: "#text",
-    message: "Ajoutez un lien ou un texte d'abord.",
+    message: "validation.text",
   },
   wifi: {
     selector: "#wifi-ssid",
-    message: "Ajoutez le nom du reseau Wi-Fi.",
+    message: "validation.wifi",
   },
   email: {
     selector: "#email-to",
-    message: "Ajoutez le destinataire de l'email.",
+    message: "validation.email",
   },
   phone: {
     selector: "#phone-number",
-    message: "Ajoutez un numero de telephone.",
+    message: "validation.phone",
   },
   sms: {
     selector: "#sms-number",
-    message: "Ajoutez le numero de telephone du SMS.",
+    message: "validation.sms",
   },
   contact: {
     selector: "#contact-name",
-    message: "Ajoutez le nom du contact.",
+    message: "validation.contact",
   },
   location: {
     selector: "#location-latitude",
     secondarySelector: "#location-longitude",
-    message: "Ajoutez une latitude et une longitude.",
+    message: "validation.location",
   },
 };
 let currentPreview = null;
@@ -101,9 +115,119 @@ const colorControls = new Set([
   backgroundColorField,
   backgroundHexField,
 ]);
+const backendErrorKeys = {
+  "QR color and background color need more contrast.": "backend.lowContrast",
+  "Selected QR code quality is not supported.": "backend.invalidQuality",
+  "Selected QR code type is not supported.": "backend.invalidType",
+  "Selected error correction level is not supported.": "backend.invalidErrorCorrection",
+  "Please enter a text or a link before generating a QR code.": "backend.emptyText",
+};
 
-function setStatus(message, type = "info") {
-  statusBox.textContent = message;
+function hasTranslation(key) {
+  return Boolean(translations[currentLanguage]?.[key] || translations.en[key]);
+}
+
+function translate(key, params = {}) {
+  const template = translations[currentLanguage]?.[key] || translations.en[key] || key;
+  return template.replace(/\{(\w+)\}/g, (_match, name) => params[name] ?? "");
+}
+
+function resolveMessage(messageOrKey, params = {}) {
+  return hasTranslation(messageOrKey) ? translate(messageOrKey, params) : messageOrKey;
+}
+
+function getStoredLanguage() {
+  try {
+    return window.localStorage.getItem(languageStorageKey);
+  } catch (_error) {
+    return null;
+  }
+}
+
+function storeLanguage(language) {
+  try {
+    window.localStorage.setItem(languageStorageKey, language);
+  } catch (_error) {
+    // Language selection still works for the current page when storage is unavailable.
+  }
+}
+
+function chooseInitialLanguage() {
+  const storedLanguage = getStoredLanguage();
+  if (supportedLanguages[storedLanguage]) {
+    return storedLanguage;
+  }
+
+  const browserLanguages = navigator.languages?.length ? navigator.languages : [navigator.language];
+  for (const browserLanguage of browserLanguages) {
+    const language = String(browserLanguage || "").toLowerCase().split("-")[0];
+    if (supportedLanguages[language]) {
+      return language;
+    }
+  }
+
+  return "en";
+}
+
+function updateLanguageControls() {
+  const language = supportedLanguages[currentLanguage];
+  languageButtonFlag.textContent = language.flag;
+  languageButtonCode.textContent = language.code;
+
+  languageMenuButtons.forEach((button) => {
+    button.setAttribute("aria-current", String(button.dataset.language === currentLanguage));
+  });
+}
+
+function applyTranslations() {
+  document.documentElement.lang = currentLanguage;
+  document.title = translate("meta.title");
+  document
+    .querySelector('meta[name="description"]')
+    ?.setAttribute("content", translate("meta.description"));
+
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = translate(element.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    element.setAttribute("placeholder", translate(element.dataset.i18nPlaceholder));
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+    element.setAttribute("aria-label", translate(element.dataset.i18nAriaLabel));
+  });
+  document.querySelectorAll("[data-i18n-alt]").forEach((element) => {
+    element.setAttribute("alt", translate(element.dataset.i18nAlt));
+  });
+
+  updateLanguageControls();
+  if (lastStatus) {
+    statusBox.textContent = resolveMessage(lastStatus.message, lastStatus.params);
+  }
+  if (!resetDelight.hidden) {
+    resetDelight.textContent = translate("delight.reset");
+  }
+  updateLogoSizeOutput();
+  evaluateDelights();
+}
+
+function setLanguage(language) {
+  if (!supportedLanguages[language]) {
+    return;
+  }
+
+  currentLanguage = language;
+  storeLanguage(language);
+  applyTranslations();
+}
+
+function setLanguageMenuOpen(isOpen) {
+  languageMenu.hidden = !isOpen;
+  languageButton.setAttribute("aria-expanded", String(isOpen));
+}
+
+function setStatus(message, type = "info", params = {}) {
+  lastStatus = { message, params };
+  statusBox.textContent = resolveMessage(message, lastStatus.params);
   statusBox.dataset.state = type;
 }
 
@@ -350,7 +474,7 @@ const delightRules = [
     priority: 100,
     target: "content",
     tone: "orange",
-    message: "Never gonna give you up...",
+    messageKey: "delight.rickGive",
     when: ({ content }) => isRickrollUrl(content),
   },
   {
@@ -358,7 +482,7 @@ const delightRules = [
     priority: 100,
     target: "filename",
     tone: "orange",
-    message: "Never gonna give you up...",
+    messageKey: "delight.rickGive",
     when: ({ filename }) => filename === "rickroll",
   },
   {
@@ -366,7 +490,7 @@ const delightRules = [
     priority: 101,
     target: "filename",
     tone: "orange",
-    message: "Never gonna let you down...",
+    messageKey: "delight.rickDown",
     when: ({ content, filename }) => filename === "rickroll" && isRickrollUrl(content),
   },
   {
@@ -374,7 +498,7 @@ const delightRules = [
     priority: 95,
     target: "content",
     tone: "badge",
-    message: "Le site respire encore. \u2665",
+    messageKey: "delight.health",
     when: ({ content }) => isOwnHealthUrl(content),
   },
   {
@@ -382,7 +506,7 @@ const delightRules = [
     priority: 90,
     target: "content",
     tone: "badge",
-    message: "QRception \u2665",
+    messageKey: "delight.qrception",
     when: ({ content }) => isOwnSiteUrl(content),
   },
   {
@@ -390,7 +514,7 @@ const delightRules = [
     priority: 85,
     target: "content",
     tone: "subtle",
-    message: "Un QR code qui cherche un QR code ?",
+    messageKey: "delight.google",
     when: ({ content }) => isQrGoogleSearch(content),
   },
   {
@@ -398,7 +522,7 @@ const delightRules = [
     priority: 80,
     target: "content",
     tone: "red",
-    message: "Mode d\u00e9veloppeur d\u00e9tect\u00e9.",
+    messageKey: "delight.localhost",
     when: ({ content }) => isLocalhostUrl(content),
   },
   {
@@ -406,7 +530,7 @@ const delightRules = [
     priority: 75,
     target: "color",
     tone: "france",
-    message: "\u00c7a c'est ma France ! Baguette ! Fromage !",
+    messageKey: "delight.france",
     when: () => hasFrenchPalette(),
   },
   {
@@ -414,7 +538,7 @@ const delightRules = [
     priority: 70,
     target: "color",
     tone: "orange",
-    message: "Le QR code joue \u00e0 cache-cache ?",
+    messageKey: "delight.hiddenQr",
     when: ({ foregroundColor, backgroundColor }) =>
       !transparentBackgroundField.checked &&
       Boolean(foregroundColor) &&
@@ -426,7 +550,7 @@ const delightRules = [
     priority: 65,
     target: "content",
     tone: "badge",
-    message: "Mais oui ! C'est une super r\u00e9ponse !",
+    messageKey: "delight.answer42",
     when: ({ normalizedContent }) => normalizedContent === "42",
   },
   {
@@ -434,7 +558,7 @@ const delightRules = [
     priority: 60,
     target: "content",
     tone: "subtle",
-    message: "Bonjour \u00e0 toi aussi.",
+    messageKey: "delight.hello",
     when: ({ normalizedContent }) => normalizedContent === "bonjour",
   },
   {
@@ -442,7 +566,7 @@ const delightRules = [
     priority: 55,
     target: "filename",
     tone: "subtle",
-    message: "un QRcode confidenciel ?",
+    messageKey: "delight.secret",
     when: ({ filename }) => filename === "secret",
   },
   {
@@ -450,7 +574,7 @@ const delightRules = [
     priority: 50,
     target: "filename",
     tone: "red",
-    message: "Encore un test, comme toujours...",
+    messageKey: "delight.test",
     when: ({ filename }) => filename === "test",
   },
   {
@@ -458,7 +582,7 @@ const delightRules = [
     priority: 45,
     target: "filename",
     tone: "subtle",
-    message: "Original. Tr\u00e8s original.",
+    messageKey: "delight.defaultFile",
     when: ({ filename }) => filename === "qr-code",
   },
 ];
@@ -488,7 +612,7 @@ function renderDelight(targetName, delight) {
     return;
   }
 
-  target.textContent = delight.message;
+  target.textContent = resolveMessage(delight.messageKey || delight.message);
   target.dataset.tone = delight.tone || "subtle";
   target.hidden = false;
 }
@@ -550,7 +674,7 @@ function registerResetClick() {
   }, resetBurstWindowMs);
 
   if (resetClickCount >= 10) {
-    resetDelight.textContent = "Encore ? Le bouton commence \u00e0 te conna\u00eetre \u00e0 force.";
+    resetDelight.textContent = translate("delight.reset");
     resetDelight.hidden = false;
   }
 }
@@ -559,7 +683,7 @@ function loadImage(url) {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("L'image n'a pas pu etre preparee."));
+    image.onerror = () => reject(new Error("errors.imagePrepare"));
     image.src = url;
   });
 }
@@ -579,7 +703,7 @@ async function convertSvgBlobToPng(svgBlob) {
         if (blob) {
           resolve(blob);
         } else {
-          reject(new Error("La copie du SVG a echoue."));
+          reject(new Error("errors.svgCopyFailed"));
         }
       }, "image/png");
     });
@@ -594,7 +718,7 @@ async function copyCurrentPreview() {
   }
 
   if (!navigator.clipboard?.write || !window.ClipboardItem) {
-    setStatus("La copie d'image n'est pas disponible dans ce navigateur.", "error");
+    setStatus("errors.copyUnavailable", "error");
     return;
   }
 
@@ -609,9 +733,9 @@ async function copyCurrentPreview() {
         "image/png": blob,
       }),
     ]);
-    setStatus("Image copiee dans le presse-papiers.", "success");
+    setStatus("status.copied", "success");
   } catch (error) {
-    setStatus(error.message || "La copie a echoue.", "error");
+    setStatus(error.message || "errors.copyFailed", "error");
   }
 }
 
@@ -630,31 +754,31 @@ async function handleSubmit(event) {
   }
 
   if (logoFile && logoFile.size > maxLogoBytes) {
-    setStatus("Le logo doit faire 2 Mo maximum.", "error");
+    setStatus("validation.logoSize", "error");
     logoField.focus();
     return;
   }
 
   if (!syncPickerFromHex(foregroundColorField, foregroundHexField)) {
-    setStatus("La couleur du QR code doit etre au format hexadecimal, par exemple #000000.", "error");
+    setStatus("validation.foregroundHex", "error");
     foregroundHexField.focus();
     return;
   }
 
   if (usesGradientColor() && !syncPickerFromHex(foregroundColor2Field, foregroundHex2Field)) {
-    setStatus("La couleur secondaire doit etre au format hexadecimal, par exemple #0F766E.", "error");
+    setStatus("validation.secondaryHex", "error");
     foregroundHex2Field.focus();
     return;
   }
 
   if (!transparentBackgroundField.checked && !syncPickerFromHex(backgroundColorField, backgroundHexField)) {
-    setStatus("La couleur du fond doit etre au format hexadecimal, par exemple #FFFFFF.", "error");
+    setStatus("validation.backgroundHex", "error");
     backgroundHexField.focus();
     return;
   }
 
   submitButton.disabled = true;
-  setStatus("Generation de l'apercu...", "loading");
+  setStatus("status.loading", "loading");
 
   try {
     const formData = new FormData(form);
@@ -672,8 +796,8 @@ async function handleSubmit(event) {
 
     if (!response.ok) {
       const errorPayload = await response.json().catch(() => null);
-      const errorMessage = errorPayload?.error || "Le QR code n'a pas pu etre genere.";
-      throw new Error(errorMessage);
+      const errorMessage = errorPayload?.error || "errors.generationFailed";
+      throw new Error(backendErrorKeys[errorMessage] || errorMessage);
     }
 
     const blob = await response.blob();
@@ -682,9 +806,9 @@ async function handleSubmit(event) {
     const downloadName = extractFilename(contentDisposition) || fallbackName(filename, extension);
 
     setCurrentPreview(blob, downloadName);
-    setStatus(`Apercu pret pour ${downloadName}.`, "success");
+    setStatus("status.previewReady", "success", { filename: downloadName });
   } catch (error) {
-    setStatus(error.message || "Une erreur inattendue est survenue.", "error");
+    setStatus(error.message || "errors.unexpected", "error");
   } finally {
     submitButton.disabled = false;
   }
@@ -710,14 +834,14 @@ function resetAdvancedOptions() {
   updateLogoSizeOutput();
   updateConditionalOptions();
   clearCurrentPreview();
-  setStatus("Options avancees reinitialisees.", "info");
+  setStatus("status.optionsReset", "info");
 }
 
 form.addEventListener("submit", handleSubmit);
 
 function clearErrorStatus() {
   if (statusBox.dataset.state === "error") {
-    setStatus("Pret a generer un nouveau QR code.", "info");
+    setStatus("status.ready", "info");
   }
 }
 
@@ -786,7 +910,32 @@ resetOptionsButton.addEventListener("click", () => {
   registerResetClick();
   evaluateDelights();
 });
+languageButton.addEventListener("click", () => {
+  setLanguageMenuOpen(languageMenu.hidden);
+});
+languageMenuButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setLanguage(button.dataset.language);
+    setLanguageMenuOpen(false);
+  });
+});
+document.addEventListener("click", (event) => {
+  if (languageButton.contains(event.target) || languageMenu.contains(event.target)) {
+    return;
+  }
+
+  setLanguageMenuOpen(false);
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") {
+    return;
+  }
+
+  setLanguageMenuOpen(false);
+});
+currentLanguage = chooseInitialLanguage();
 updateQrTypeFields();
 updateLogoSizeOutput();
 updateConditionalOptions();
+applyTranslations();
 evaluateDelights();
