@@ -71,6 +71,7 @@
         <form id="qr-form" class="form" enctype="multipart/form-data" novalidate>
           <fieldset class="content-section">
             <legend data-i18n="content.legend">Contenu</legend>
+            <input id="ui-language" name="ui_language" type="hidden" value="fr">
 
             <div class="field">
               <label for="qr-type" data-i18n="content.typeLabel">Type de QR code</label>
@@ -147,14 +148,14 @@
             <div id="qr-fields-phone" class="qr-type-fields" data-qr-type-fields="phone" hidden>
               <div class="field">
                 <label for="phone-number" data-i18n="phone.number">Num&eacute;ro de t&eacute;l&eacute;phone</label>
-                <input id="phone-number" name="phone_number" type="tel" placeholder="+33612345678" disabled>
+                <input id="phone-number" name="phone_number" type="tel" placeholder="+33 1 23 45 67 89" data-i18n-placeholder="phone.placeholder" disabled>
               </div>
             </div>
 
             <div id="qr-fields-sms" class="qr-type-fields" data-qr-type-fields="sms" hidden>
               <div class="field">
                 <label for="sms-number" data-i18n="sms.number">Num&eacute;ro de t&eacute;l&eacute;phone</label>
-                <input id="sms-number" name="sms_number" type="tel" placeholder="+33612345678" disabled>
+                <input id="sms-number" name="sms_number" type="tel" placeholder="+33 1 23 45 67 89" data-i18n-placeholder="phone.placeholder" disabled>
               </div>
 
               <div class="field">
@@ -166,28 +167,33 @@
             <div id="qr-fields-contact" class="qr-type-fields" data-qr-type-fields="contact" hidden>
               <div class="option-grid">
                 <div class="field">
-                  <label for="contact-name" data-i18n="contact.name">Nom complet</label>
-                  <input id="contact-name" name="contact_name" type="text" disabled>
+                  <label for="contact-first-name" data-i18n="contact.firstName">Pr&eacute;nom</label>
+                  <input id="contact-first-name" name="contact_first_name" type="text" placeholder="Jean" data-i18n-placeholder="contact.firstNamePlaceholder" disabled>
+                </div>
+
+                <div class="field">
+                  <label for="contact-last-name" data-i18n="contact.lastName">Nom</label>
+                  <input id="contact-last-name" name="contact_last_name" type="text" placeholder="Dupont" data-i18n-placeholder="contact.lastNamePlaceholder" disabled>
                 </div>
 
                 <div class="field">
                   <label for="contact-org" data-i18n="contact.org">Entreprise</label>
-                  <input id="contact-org" name="contact_org" type="text" disabled>
+                  <input id="contact-org" name="contact_org" type="text" placeholder="Mon entreprise" data-i18n-placeholder="contact.orgPlaceholder" disabled>
                 </div>
 
                 <div class="field">
                   <label for="contact-phone" data-i18n="contact.phone">T&eacute;l&eacute;phone</label>
-                  <input id="contact-phone" name="contact_phone" type="tel" disabled>
+                  <input id="contact-phone" name="contact_phone" type="tel" placeholder="+33 1 23 45 67 89" data-i18n-placeholder="phone.placeholder" disabled>
                 </div>
 
                 <div class="field">
                   <label for="contact-email">Email</label>
-                  <input id="contact-email" name="contact_email" type="email" disabled>
+                  <input id="contact-email" name="contact_email" type="email" placeholder="mail@example.com" disabled>
                 </div>
 
                 <div class="field">
                   <label for="contact-url" data-i18n="contact.url">Site web</label>
-                  <input id="contact-url" name="contact_url" type="url" disabled>
+                  <input id="contact-url" name="contact_url" type="url" placeholder="https://example.com" disabled>
                 </div>
               </div>
             </div>

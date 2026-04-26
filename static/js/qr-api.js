@@ -8,6 +8,7 @@
     "Selected QR code type is not supported.": "backend.invalidType",
     "Selected error correction level is not supported.": "backend.invalidErrorCorrection",
     "Please enter a text or a link before generating a QR code.": "backend.emptyText",
+    "Please enter a contact first name and last name.": "validation.contact",
   };
 
   function fallbackName(rawName, extension = "png") {

@@ -82,6 +82,9 @@
 
     function applyTranslations() {
       document.documentElement.lang = currentLanguage;
+      if (elements.uiLanguageField) {
+        elements.uiLanguageField.value = currentLanguage;
+      }
       document.title = translate("meta.title");
       document
         .querySelector('meta[name="description"]')

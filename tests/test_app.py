@@ -30,6 +30,9 @@ def test_index_page_renders():
     assert b"preview-image" in response.data
     assert b"qr-type" in response.data
     assert b"qr-fields-wifi" in response.data
+    assert b"contact-first-name" in response.data
+    assert b"contact-last-name" in response.data
+    assert b"+33 1 23 45 67 89" in response.data
     assert b"output-format" in response.data
     assert b"eye-style" in response.data
     assert b"transparent-background" in response.data

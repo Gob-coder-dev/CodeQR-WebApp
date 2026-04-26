@@ -230,7 +230,7 @@ Supported QR code types:
 - Email
 - Phone call
 - SMS
-- Contact card
+- Contact card with structured first and last name fields
 - Location
 
 Advanced options include:
@@ -285,6 +285,13 @@ It accepts form data or JSON. Common fields include:
 - `qr_type`
 - `text`
 - `filename`
+- `phone_number`
+- `contact_first_name`
+- `contact_last_name`
+- `contact_org`
+- `contact_phone`
+- `contact_email`
+- `contact_url`
 - `output_format`
 - `foreground_color`
 - `foreground_color_2`

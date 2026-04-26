@@ -8,6 +8,7 @@ const elements = {
   languageMenu: document.querySelector("#language-menu"),
   languageMenuButtons: document.querySelectorAll("[data-language]"),
   qrTypeField: document.querySelector("#qr-type"),
+  uiLanguageField: document.querySelector("#ui-language"),
   qrTypeFieldGroups: document.querySelectorAll("[data-qr-type-fields]"),
   textField: document.querySelector("#text"),
   wifiSecurityField: document.querySelector("#wifi-security"),

@@ -39,7 +39,8 @@
       message: "validation.sms",
     },
     contact: {
-      selector: "#contact-name",
+      selector: "#contact-first-name",
+      secondarySelector: "#contact-last-name",
       message: "validation.contact",
     },
     location: {

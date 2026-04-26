@@ -50,16 +50,26 @@ def test_build_qr_payload_builds_email_payload():
 
 
 def test_build_qr_payload_builds_phone_payload():
-    assert build_qr_payload({"qr_type": "phone", "phone_number": "+33612345678"}) == (
+    assert build_qr_payload({"qr_type": "phone", "phone_number": "+33 6 12 34 56 78"}) == (
         "tel:+33612345678"
     )
+
+
+def test_build_qr_payload_normalizes_french_local_phone_payload():
+    assert build_qr_payload(
+        {
+            "qr_type": "phone",
+            "phone_number": "06 12 34 56 78",
+            "ui_language": "fr",
+        }
+    ) == "tel:+33612345678"
 
 
 def test_build_qr_payload_builds_sms_payload():
     payload = build_qr_payload(
         {
             "qr_type": "sms",
-            "sms_number": "+33612345678",
+            "sms_number": "+33 6 12 34 56 78",
             "sms_message": "Bonjour a tous",
         }
     )
@@ -71,26 +81,40 @@ def test_build_qr_payload_builds_contact_payload():
     payload = build_qr_payload(
         {
             "qr_type": "contact",
-            "contact_name": "Yanis Demo",
+            "contact_first_name": "Jean",
+            "contact_last_name": "Dupont",
             "contact_org": "Demo",
-            "contact_phone": "+33612345678",
-            "contact_email": "yanis@example.com",
+            "contact_phone": "+33 1 23 45 67 89",
+            "contact_email": "mail@example.com",
             "contact_url": "https://example.com",
         }
     )
 
-    assert payload == "\n".join(
+    assert payload == "\r\n".join(
         [
             "BEGIN:VCARD",
             "VERSION:3.0",
-            "FN:Yanis Demo",
+            "N:Dupont;Jean;;;",
+            "FN:Jean Dupont",
             "ORG:Demo",
-            "TEL:+33612345678",
-            "EMAIL:yanis@example.com",
+            "TEL;TYPE=CELL:+33123456789",
+            "EMAIL;TYPE=INTERNET:mail@example.com",
             "URL:https://example.com",
             "END:VCARD",
         ]
     )
+
+
+def test_build_qr_payload_keeps_legacy_contact_name_compatible():
+    payload = build_qr_payload(
+        {
+            "qr_type": "contact",
+            "contact_name": "Yanis Demo",
+        }
+    )
+
+    assert "N:Demo;Yanis;;;" in payload
+    assert "FN:Yanis Demo" in payload
 
 
 def test_build_qr_payload_builds_location_payload():
