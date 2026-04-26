@@ -42,7 +42,14 @@ def test_index_page_renders():
     assert b"reset-delight" in response.data
     assert b"language-button" in response.data
     assert b"language-menu" in response.data
-    assert b"language.js" in response.data
+    assert b"css/style.css" in response.data
+    assert b"js/language.js" in response.data
+    assert b"js/i18n.js" in response.data
+    assert b"js/color-utils.js" in response.data
+    assert b"js/form-options.js" in response.data
+    assert b"js/delight.js" in response.data
+    assert b"js/preview.js" in response.data
+    assert b"js/qr-api.js" in response.data
     assert b'data-language="fr"' in response.data
     assert b'data-language="en"' in response.data
     assert b'data-language="es"' in response.data

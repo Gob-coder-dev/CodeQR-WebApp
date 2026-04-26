@@ -40,13 +40,35 @@ The app does not store user data. It renders a web page, accepts form input, gen
 |-- serve.py
 |-- qr_payload.py
 |-- qr_service.py
+|-- qr_code/
+|   |-- __init__.py
+|   |-- export.py
+|   |-- options.py
+|   |-- payload.py
+|   |-- rendering.py
+|   `-- service.py
 |-- requirements.txt
 |-- requirements-dev.txt
 |-- templates/
 |   `-- index.html
 |-- static/
-|   |-- app.js
-|   `-- style.css
+|   |-- css/
+|   |   |-- base.css
+|   |   |-- delight.css
+|   |   |-- forms.css
+|   |   |-- language-switcher.css
+|   |   |-- layout.css
+|   |   |-- preview.css
+|   |   `-- style.css
+|   `-- js/
+|       |-- app.js
+|       |-- color-utils.js
+|       |-- delight.js
+|       |-- form-options.js
+|       |-- i18n.js
+|       |-- language.js
+|       |-- preview.js
+|       `-- qr-api.js
 `-- tests/
     |-- test_app.py
     |-- test_qr_payload.py
@@ -174,7 +196,26 @@ The readability panel gives non-blocking warnings when settings may reduce scan 
 
 ## Frontend Notes
 
-Small contextual surprises are grouped in `static/app.js` under the `delight` keyword. Search for `delightRules` if you need to adjust those hidden UI messages.
+Frontend behavior is split by responsibility:
+
+- `static/js/language.js`: language metadata and translated text resources.
+- `static/js/i18n.js`: browser-language detection, language menu, and text application.
+- `static/js/color-utils.js`: color normalization, picker/hex sync, and color easter-egg checks.
+- `static/js/form-options.js`: form validation, conditional fields, and advanced options.
+- `static/js/delight.js`: small contextual surprises. Search for `delightRules` to adjust those hidden UI messages.
+- `static/js/preview.js`: preview state, downloads, and clipboard copy.
+- `static/js/qr-api.js`: QR generation API call and response handling.
+- `static/js/app.js`: orchestration and event binding.
+- `static/css/style.css`: CSS entry point that imports `base.css`, `layout.css`, `forms.css`, `preview.css`, `delight.css`, and `language-switcher.css`.
+
+Backend QR generation is split by responsibility:
+
+- `qr_code/options.py`: constants, request errors, option resolution, color validation, and file-name sanitization.
+- `qr_code/rendering.py`: module/eye drawing, color masks, logo preparation, and SVG shape helpers.
+- `qr_code/export.py`: PNG/SVG byte generation.
+- `qr_code/payload.py`: typed QR payload builders for text, Wi-Fi, email, phone, SMS, contact, and location.
+- `qr_code/service.py`: public QR service API and file-format dispatch.
+- `qr_service.py` and `qr_payload.py`: thin compatibility imports for older local imports and tests.
 
 ## API Endpoint
 

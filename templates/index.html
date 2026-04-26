@@ -8,7 +8,7 @@
       name="description"
       content="Cr&eacute;ez des QR codes PNG ou SVG pour liens, Wi-Fi, email, t&eacute;l&eacute;phone, SMS, contact et localisation, avec couleurs, formes, logo, correction d'erreur et marge personnalisables."
     >
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   </head>
   <body>
     <div class="language-switcher">
@@ -447,7 +447,13 @@
       </section>
     </main>
 
-    <script src="{{ url_for('static', filename='language.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/language.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/color-utils.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/form-options.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/delight.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/preview.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/qr-api.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
   </body>
 </html>

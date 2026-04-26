@@ -1,4 +1,4 @@
-// Text resources for the QR converter frontend. Keep behavior in app.js.
+// Text resources for the QR converter frontend. Keep behavior in the feature modules.
 (function () {
   const qrSupportedLanguages = {
     fr: { flag: "\u{1F1EB}\u{1F1F7}", code: "FR", label: "Fran\u00e7ais" },

@@ -1,0 +1,71 @@
+.preview {
+  margin-top: 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.preview[hidden] {
+  display: none;
+}
+
+.preview-frame {
+  min-height: 220px;
+  padding: 18px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line-strong);
+  border-radius: 18px;
+  background:
+    linear-gradient(45deg, rgba(18, 32, 51, 0.04) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(18, 32, 51, 0.04) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(18, 32, 51, 0.04) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(18, 32, 51, 0.04) 75%);
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  background-size: 20px 20px;
+}
+
+.preview-frame img {
+  width: min(100%, 280px);
+  height: auto;
+  display: block;
+}
+
+.preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.preview-button {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 11px 16px;
+  font: inherit;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.preview-button--download {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  box-shadow: 0 12px 24px rgba(15, 118, 110, 0.22);
+}
+
+.preview-button--copy {
+  background: #243247;
+  box-shadow: 0 12px 24px rgba(36, 50, 71, 0.18);
+}
+
+.preview-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.preview-button:disabled {
+  cursor: not-allowed;
+  background: rgba(79, 95, 113, 0.42);
+  box-shadow: none;
+  opacity: 0.72;
+  transform: none;
+}

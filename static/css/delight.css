@@ -1,0 +1,60 @@
+.reset-delight {
+  color: #8a4b00;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.delight-message {
+  margin-top: 0;
+  padding: 12px 15px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.delight-message--inline {
+  padding: 10px 13px;
+  font-size: 0.94rem;
+}
+
+.delight-message[data-tone="orange"] {
+  border-color: rgba(214, 112, 21, 0.62);
+  background: rgba(255, 145, 42, 0.14);
+  color: #9a4d00;
+}
+
+.delight-message[data-tone="badge"] {
+  border-color: rgba(15, 118, 110, 0.74);
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--primary-dark);
+}
+
+.delight-message[data-tone="subtle"] {
+  border-color: rgba(79, 95, 113, 0.42);
+  background: rgba(18, 32, 51, 0.06);
+  color: var(--muted);
+}
+
+.delight-message[data-tone="red"] {
+  border-color: rgba(185, 56, 47, 0.56);
+  background: rgba(185, 56, 47, 0.1);
+  color: var(--danger);
+}
+
+.delight-message[data-tone="france"] {
+  border-color: rgba(32, 83, 164, 0.58);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 85, 164, 0.3) 0%,
+    rgba(0, 85, 164, 0.3) 32%,
+    rgba(255, 255, 255, 0.94) 32%,
+    rgba(255, 255, 255, 0.94) 68%,
+    rgba(239, 65, 53, 0.3) 68%,
+    rgba(239, 65, 53, 0.3) 100%
+  );
+  color: #122033;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);
+}

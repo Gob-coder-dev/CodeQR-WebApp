@@ -13,8 +13,8 @@ ensure_project_interpreter()
 from flask import Flask, jsonify, render_template, request, send_file
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from qr_payload import build_qr_payload
-from qr_service import QRCodeRequestError, build_download_name, generate_qr_file
+from qr_code.payload import build_qr_payload
+from qr_code.service import QRCodeRequestError, build_download_name, generate_qr_file
 
 MAX_REQUEST_BYTES = 3 * 1024 * 1024
 

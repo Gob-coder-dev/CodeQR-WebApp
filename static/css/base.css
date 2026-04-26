@@ -1,0 +1,39 @@
+:root {
+  --bg: #f7f1e7;
+  --bg-accent: #e7efe4;
+  --panel: rgba(255, 252, 246, 0.92);
+  --ink: #122033;
+  --muted: #4f5f71;
+  --line: rgba(15, 118, 110, 0.48);
+  --line-soft: rgba(15, 118, 110, 0.34);
+  --line-strong: rgba(15, 118, 110, 0.68);
+  --primary: #0f766e;
+  --primary-dark: #0a5a55;
+  --danger: #b9382f;
+  --success: #1f7a3d;
+  --shadow: 0 24px 60px rgba(18, 32, 51, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(199, 91, 61, 0.18), transparent 30%),
+    linear-gradient(135deg, var(--bg), var(--bg-accent));
+}
+
+code {
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.95em;
+}
