@@ -49,6 +49,10 @@ EYE_DRAWERS = {
     "circle": CircleModuleDrawer,
 }
 
+SVG_GAPPED_RATIO = 0.82
+SVG_BAR_RATIO = 0.82
+SVG_ROUNDED_RADIUS_RATIO = 0.42
+
 
 def build_color_mask(
     color_mode: str,
@@ -220,6 +224,7 @@ def svg_gradient_defs(
     color_mode: str,
     foreground: tuple[int, int, int],
     foreground_2: tuple[int, int, int],
+    image_size: int | None = None,
 ) -> tuple[str, str]:
     mode = resolve_color_mode(color_mode)
     if mode == "solid":
@@ -227,21 +232,35 @@ def svg_gradient_defs(
 
     start_color = color_to_hex(foreground)
     end_color = color_to_hex(foreground_2)
-    if mode == "horizontal":
-        gradient = (
-            '<linearGradient id="qr-gradient" x1="0%" y1="0%" x2="100%" y2="0%">'
-        )
-    elif mode == "vertical":
-        gradient = (
-            '<linearGradient id="qr-gradient" x1="0%" y1="0%" x2="0%" y2="100%">'
-        )
-    elif mode == "radial":
-        gradient = '<radialGradient id="qr-gradient" cx="50%" cy="50%" r="70%">'
+    if image_size is None:
+        horizontal_coords = 'x1="0%" y1="0%" x2="100%" y2="0%"'
+        vertical_coords = 'x1="0%" y1="0%" x2="0%" y2="100%"'
+        radial_coords = 'cx="50%" cy="50%" r="70%"'
+        square_coords = 'cx="50%" cy="50%" r="55%" fx="50%" fy="50%"'
+        gradient_units = ""
     else:
-        gradient = (
-            '<radialGradient id="qr-gradient" cx="50%" cy="50%" r="55%" '
-            'fx="50%" fy="50%">'
+        midpoint = trim_number(image_size / 2)
+        horizontal_coords = f'x1="0" y1="0" x2="{image_size}" y2="0"'
+        vertical_coords = f'x1="0" y1="0" x2="0" y2="{image_size}"'
+        radial_coords = (
+            f'cx="{midpoint}" cy="{midpoint}" '
+            f'r="{trim_number(image_size * 0.7)}"'
         )
+        square_coords = (
+            f'cx="{midpoint}" cy="{midpoint}" '
+            f'r="{trim_number(image_size * 0.55)}" '
+            f'fx="{midpoint}" fy="{midpoint}"'
+        )
+        gradient_units = ' gradientUnits="userSpaceOnUse"'
+
+    if mode == "horizontal":
+        gradient = f'<linearGradient id="qr-gradient" {horizontal_coords}{gradient_units}>'
+    elif mode == "vertical":
+        gradient = f'<linearGradient id="qr-gradient" {vertical_coords}{gradient_units}>'
+    elif mode == "radial":
+        gradient = f'<radialGradient id="qr-gradient" {radial_coords}{gradient_units}>'
+    else:
+        gradient = f'<radialGradient id="qr-gradient" {square_coords}{gradient_units}>'
 
     tag_name = "radialGradient" if mode in {"radial", "square"} else "linearGradient"
     defs = (
@@ -253,6 +272,270 @@ def svg_gradient_defs(
     return defs, "url(#qr-gradient)"
 
 
+def module_position(row: int, col: int, border: int, box_size: int) -> tuple[int, int]:
+    return (col + border) * box_size, (row + border) * box_size
+
+
+def is_styled_module(
+    style_grid: list[list[str | None]],
+    row: int,
+    col: int,
+    style: str,
+) -> bool:
+    return (
+        0 <= row < len(style_grid)
+        and 0 <= col < len(style_grid[row])
+        and style_grid[row][col] == style
+    )
+
+
+def svg_path_element(path_data: list[str], fill: str) -> list[str]:
+    if not path_data:
+        return []
+
+    return [f'<path d="{"".join(path_data)}" fill="{fill}"/>']
+
+
+def svg_rect(
+    x: float | int,
+    y: float | int,
+    width: float | int,
+    height: float | int,
+    fill: str,
+    *,
+    radius: float | int = 0,
+) -> str:
+    radius_attributes = ""
+    if radius:
+        radius_attributes = (
+            f' rx="{trim_number(radius)}" ry="{trim_number(radius)}"'
+        )
+
+    return (
+        f'<rect x="{trim_number(x)}" y="{trim_number(y)}" '
+        f'width="{trim_number(width)}" height="{trim_number(height)}"'
+        f'{radius_attributes} fill="{fill}"/>'
+    )
+
+
+def svg_square_runs(
+    style_grid: list[list[str | None]],
+    border: int,
+    box_size: int,
+    fill: str,
+) -> list[str]:
+    path_data = []
+    module_count = len(style_grid)
+    for row in range(module_count):
+        col = 0
+        while col < module_count:
+            if style_grid[row][col] != "square":
+                col += 1
+                continue
+
+            start_col = col
+            while col < module_count and style_grid[row][col] == "square":
+                col += 1
+
+            x, y = module_position(row, start_col, border, box_size)
+            width = (col - start_col) * box_size
+            right = x + width
+            bottom = y + box_size
+            path_data.append(
+                f"M{trim_number(x)},{trim_number(y)}"
+                f"H{trim_number(right)}V{trim_number(bottom)}"
+                f"H{trim_number(x)}z"
+            )
+
+    return svg_path_element(path_data, fill)
+
+
+def svg_rounded_module_path(
+    style_grid: list[list[str | None]],
+    row: int,
+    col: int,
+    border: int,
+    box_size: int,
+) -> str:
+    x, y = module_position(row, col, border, box_size)
+    right = x + box_size
+    bottom = y + box_size
+    radius = box_size * SVG_ROUNDED_RADIUS_RATIO
+
+    has_north = is_styled_module(style_grid, row - 1, col, "rounded")
+    has_east = is_styled_module(style_grid, row, col + 1, "rounded")
+    has_south = is_styled_module(style_grid, row + 1, col, "rounded")
+    has_west = is_styled_module(style_grid, row, col - 1, "rounded")
+
+    round_nw = not has_north and not has_west
+    round_ne = not has_north and not has_east
+    round_se = not has_south and not has_east
+    round_sw = not has_south and not has_west
+
+    top_left_x = x + radius if round_nw else x
+    top_right_x = right - radius if round_ne else right
+    right_top_y = y + radius if round_ne else y
+    right_bottom_y = bottom - radius if round_se else bottom
+    bottom_right_x = right - radius if round_se else right
+    bottom_left_x = x + radius if round_sw else x
+    left_bottom_y = bottom - radius if round_sw else bottom
+    left_top_y = y + radius if round_nw else y
+
+    parts = [
+        f"M{trim_number(top_left_x)},{trim_number(y)}",
+        f"L{trim_number(top_right_x)},{trim_number(y)}",
+    ]
+    if round_ne:
+        parts.append(
+            f"Q{trim_number(right)},{trim_number(y)} "
+            f"{trim_number(right)},{trim_number(right_top_y)}"
+        )
+    else:
+        parts.append(f"L{trim_number(right)},{trim_number(y)}")
+
+    parts.append(f"L{trim_number(right)},{trim_number(right_bottom_y)}")
+    if round_se:
+        parts.append(
+            f"Q{trim_number(right)},{trim_number(bottom)} "
+            f"{trim_number(bottom_right_x)},{trim_number(bottom)}"
+        )
+    else:
+        parts.append(f"L{trim_number(right)},{trim_number(bottom)}")
+
+    parts.append(f"L{trim_number(bottom_left_x)},{trim_number(bottom)}")
+    if round_sw:
+        parts.append(
+            f"Q{trim_number(x)},{trim_number(bottom)} "
+            f"{trim_number(x)},{trim_number(left_bottom_y)}"
+        )
+    else:
+        parts.append(f"L{trim_number(x)},{trim_number(bottom)}")
+
+    parts.append(f"L{trim_number(x)},{trim_number(left_top_y)}")
+    if round_nw:
+        parts.append(
+            f"Q{trim_number(x)},{trim_number(y)} "
+            f"{trim_number(top_left_x)},{trim_number(y)}"
+        )
+    else:
+        parts.append(f"L{trim_number(x)},{trim_number(y)}")
+
+    parts.append("z")
+    return "".join(parts)
+
+
+def svg_rounded_modules(
+    style_grid: list[list[str | None]],
+    border: int,
+    box_size: int,
+    fill: str,
+) -> list[str]:
+    path_data = []
+    for row, module_row in enumerate(style_grid):
+        for col, style in enumerate(module_row):
+            if style == "rounded":
+                path_data.append(svg_rounded_module_path(style_grid, row, col, border, box_size))
+
+    return svg_path_element(path_data, fill)
+
+
+def svg_vertical_runs(
+    style_grid: list[list[str | None]],
+    border: int,
+    box_size: int,
+    fill: str,
+) -> list[str]:
+    shapes = []
+    module_count = len(style_grid)
+    width = box_size * SVG_BAR_RATIO
+    delta = (box_size - width) / 2
+    radius = width / 2
+
+    for col in range(module_count):
+        row = 0
+        while row < module_count:
+            if style_grid[row][col] != "vertical":
+                row += 1
+                continue
+
+            start_row = row
+            while row < module_count and style_grid[row][col] == "vertical":
+                row += 1
+
+            x, y = module_position(start_row, col, border, box_size)
+            height = (row - start_row) * box_size
+            shapes.append(
+                svg_rect(x + delta, y, width, height, fill, radius=radius)
+            )
+
+    return shapes
+
+
+def svg_horizontal_runs(
+    style_grid: list[list[str | None]],
+    border: int,
+    box_size: int,
+    fill: str,
+) -> list[str]:
+    shapes = []
+    module_count = len(style_grid)
+    height = box_size * SVG_BAR_RATIO
+    delta = (box_size - height) / 2
+    radius = height / 2
+
+    for row in range(module_count):
+        col = 0
+        while col < module_count:
+            if style_grid[row][col] != "horizontal":
+                col += 1
+                continue
+
+            start_col = col
+            while col < module_count and style_grid[row][col] == "horizontal":
+                col += 1
+
+            x, y = module_position(row, start_col, border, box_size)
+            width = (col - start_col) * box_size
+            shapes.append(
+                svg_rect(x, y + delta, width, height, fill, radius=radius)
+            )
+
+    return shapes
+
+
+def svg_unit_modules(
+    style_grid: list[list[str | None]],
+    border: int,
+    box_size: int,
+    fill: str,
+) -> list[str]:
+    shapes = []
+    for row, module_row in enumerate(style_grid):
+        for col, style in enumerate(module_row):
+            if style not in {"circle", "gapped"}:
+                continue
+
+            x, y = module_position(row, col, border, box_size)
+            shapes.append(svg_shape(style, x, y, box_size, fill))
+
+    return shapes
+
+
+def svg_shapes_from_grid(
+    style_grid: list[list[str | None]],
+    border: int,
+    box_size: int,
+    fill: str,
+) -> list[str]:
+    return [
+        *svg_square_runs(style_grid, border, box_size, fill),
+        *svg_rounded_modules(style_grid, border, box_size, fill),
+        *svg_vertical_runs(style_grid, border, box_size, fill),
+        *svg_horizontal_runs(style_grid, border, box_size, fill),
+        *svg_unit_modules(style_grid, border, box_size, fill),
+    ]
+
+
 def svg_shape(style: str, x: int, y: int, box_size: int, fill: str) -> str:
     if style == "circle":
         radius = box_size / 2
@@ -262,8 +545,7 @@ def svg_shape(style: str, x: int, y: int, box_size: int, fill: str) -> str:
         )
 
     if style == "gapped":
-        ratio = 0.82
-        size = box_size * ratio
+        size = box_size * SVG_GAPPED_RATIO
         delta = (box_size - size) / 2
         return (
             f'<rect x="{trim_number(x + delta)}" y="{trim_number(y + delta)}" '
@@ -278,7 +560,7 @@ def svg_shape(style: str, x: int, y: int, box_size: int, fill: str) -> str:
         )
 
     if style == "vertical":
-        width = box_size * 0.62
+        width = box_size * SVG_BAR_RATIO
         delta = (box_size - width) / 2
         radius = width / 2
         return (
@@ -288,7 +570,7 @@ def svg_shape(style: str, x: int, y: int, box_size: int, fill: str) -> str:
         )
 
     if style == "horizontal":
-        height = box_size * 0.62
+        height = box_size * SVG_BAR_RATIO
         delta = (box_size - height) / 2
         radius = height / 2
         return (

@@ -1,4 +1,5 @@
 import io
+import re
 
 import pytest
 from PIL import Image, ImageDraw
@@ -153,6 +154,73 @@ def test_generate_qr_svg_returns_svg():
     assert svg_bytes.startswith(b"<svg")
     assert b"radialGradient" in svg_bytes
     assert b"<circle" in svg_bytes
+
+
+def test_generate_qr_svg_uses_global_horizontal_gradient():
+    svg = generate_qr_svg(
+        "https://example.com",
+        foreground_color="#000000",
+        foreground_color_2="#0f766e",
+        background_color="#ffffff",
+        color_mode="horizontal",
+        quality="low",
+    ).decode("utf-8")
+
+    width = re.search(r'<svg[^>]+width="(\d+)"', svg).group(1)
+    assert 'gradientUnits="userSpaceOnUse"' in svg
+    assert f'x2="{width}" y2="0"' in svg
+
+
+def test_generate_qr_svg_uses_global_vertical_gradient():
+    svg = generate_qr_svg(
+        "https://example.com",
+        foreground_color="#000000",
+        foreground_color_2="#0f766e",
+        background_color="#ffffff",
+        color_mode="vertical",
+        quality="low",
+    ).decode("utf-8")
+
+    height = re.search(r'<svg[^>]+height="(\d+)"', svg).group(1)
+    assert 'gradientUnits="userSpaceOnUse"' in svg
+    assert f'x2="0" y2="{height}"' in svg
+
+
+def test_generate_qr_svg_rounded_modules_use_neighbor_aware_paths():
+    svg = generate_qr_svg(
+        "https://example.com",
+        module_style="rounded",
+        eye_style="match",
+        quality="low",
+    ).decode("utf-8")
+
+    assert "<path" in svg
+    assert 'rx="' not in svg
+    assert "Q" in svg
+
+
+def test_generate_qr_svg_vertical_modules_are_merged_into_bars():
+    svg = generate_qr_svg(
+        "https://example.com",
+        module_style="vertical",
+        eye_style="match",
+        quality="low",
+    ).decode("utf-8")
+
+    assert 'width="8.2"' in svg
+    assert re.search(r'width="8\.2" height="(?:20|30|40|50|60|70)"', svg)
+
+
+def test_generate_qr_svg_horizontal_modules_are_merged_into_bars():
+    svg = generate_qr_svg(
+        "https://example.com",
+        module_style="horizontal",
+        eye_style="match",
+        quality="low",
+    ).decode("utf-8")
+
+    assert 'height="8.2"' in svg
+    assert re.search(r'width="(?:20|30|40|50|60|70)" height="8\.2"', svg)
 
 
 def test_generate_qr_file_supports_svg():

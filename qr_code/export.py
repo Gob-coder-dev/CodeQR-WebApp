@@ -44,7 +44,7 @@ from qr_code.rendering import (
     paste_logo,
     prepare_logo,
     svg_gradient_defs,
-    svg_shape,
+    svg_shapes_from_grid,
 )
 
 
@@ -105,26 +105,29 @@ def generate_qr_svg(
             _, logo_box = prepared_logo
             clear_intersecting_modules(qr_code, logo_box)
 
-    defs, fill = svg_gradient_defs(color_mode, foreground, foreground_2)
+    defs, fill = svg_gradient_defs(color_mode, foreground, foreground_2, image_size)
     background_rect = ""
     if not is_transparent:
         background_rect = (
             f'<rect width="100%" height="100%" fill="{color_to_hex(background)}"/>'
         )
 
-    shapes = []
     module_count = qr_code.modules_count
+    style_grid: list[list[str | None]] = []
     for row, module_row in enumerate(qr_code.modules):
+        style_row = []
         for col, is_active in enumerate(module_row):
             if not is_active:
+                style_row.append(None)
                 continue
 
-            x = (col + qr_code.border) * box_size
-            y = (row + qr_code.border) * box_size
             style = module_style
             if is_eye_module(row, col, module_count):
                 style = module_style if eye_style == "match" else eye_style
-            shapes.append(svg_shape(style, x, y, box_size, fill))
+            style_row.append(style)
+        style_grid.append(style_row)
+
+    shapes = svg_shapes_from_grid(style_grid, qr_code.border, box_size, fill)
 
     logo_element = ""
     if prepared_logo:
